@@ -1,0 +1,21 @@
+<h1>ngx-flow example</h1>
+
+<p>Is flowjs supported by the browser? {{flow.flow?.support}}</p>
+
+<input type="file" flowButton [flowConfig]="flowConfig" #flow="flowButton">
+
+<table>
+  <tr>
+    <th>filename</th>
+    <th>progress</th>
+    <th>status</th>
+  </tr>
+  <tr *ngFor="let file of (flow.transfers$ | async).transfers">
+    <td>{{file.file}}</td>
+    <td>{{file.progress | percent}}</td>
+    <td>{{file.status}}</td>
+  </tr>
+</table>
+
+<button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
+{{(flow.transfers$ | async).totalProgress | percent}}
