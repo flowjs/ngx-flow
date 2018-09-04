@@ -6,11 +6,12 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 
 - ✅ upload single file
 - ✅ upload multiple files
-- 🚧 queue management
-- ⏱ error handling
-- ⏱ pause / resume upload
-- ⏱ cancel upload, cancel all uploads
-- ⏱ upload progress
+- ✅ queue management
+- 🚧 error handling
+- ✅ pause / resume upload
+- ✅ cancel upload, cancel all uploads
+- ✅ upload progress
+- ⏱ file / directory restrictions
 - ⏱ file restrictions
 - ⏱ drag & drop
 
@@ -66,22 +67,23 @@ Observable `flow.transfers$` emits state in form:
   totalProgress: 0.5,
   transfers: [
     {
-      file: "somefile.txt",
-      status: "added"
+      name: "somefile.txt",
+      flowFile: FlowFile,
+      progress: 0
     },
     {
-      file: "uploading.txt",
-      status: "uploading",
+      name: "uploading.txt",
+      flowFile: FlowFile,
       progress: 0.5
     },
     {
-      file: "failed-to-upload.txt",
-      status: "error",
+      name: "failed-to-upload.txt",
+      flowFile: FlowFile,
       progress: 0.8
     }
     {
-      file: "uploaded.txt",
-      status: "success",
+      name: "uploaded.txt",
+      flowFile: FlowFile,
       progress: 1
     }
   ]

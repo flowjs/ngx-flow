@@ -1,6 +1,8 @@
 import { Transfer } from './transfer';
+import { Flow } from './flow/flow';
 
 export interface UploadState {
-  totalProgress: number;
   transfers: Transfer[];
+  totalProgress: number;
+  flow: Flow;
 }

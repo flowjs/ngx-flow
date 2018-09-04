@@ -1,4 +1,7 @@
+import { FlowFile } from './flow/flow-file';
+
 export interface Transfer {
-  file: string;
+  name: string;
+  flowFile: FlowFile;
   progress: number;
 }

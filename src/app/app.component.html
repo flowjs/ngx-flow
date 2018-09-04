@@ -10,12 +10,17 @@
     <th>progress</th>
     <th>status</th>
   </tr>
-  <tr *ngFor="let file of (flow.transfers$ | async).transfers">
-    <td>{{file.file}}</td>
-    <td>{{file.progress | percent}}</td>
-    <td>{{file.status}}</td>
+  <tr *ngFor="let transfer of (flow.transfers$ | async).transfers">
+    <td>{{transfer.name}}</td>
+    <td>{{transfer.progress | percent}}</td>
+    <td>
+      <button (click)="flow.pauseFile(transfer)">pause</button>
+      <button (click)="flow.resumeFile(transfer)">resume</button>
+      <button (click)="flow.cancelFile(transfer)">cancel</button>
+    </td>
   </tr>
 </table>
 
 <button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
-{{(flow.transfers$ | async).totalProgress | percent}}
+<button type="button" (click)="flow.cancel()" [disabled]="!(flow.transfers$ | async).transfers.length">Cancel all</button>
+Total progress: {{(flow.transfers$ | async).totalProgress | percent}}

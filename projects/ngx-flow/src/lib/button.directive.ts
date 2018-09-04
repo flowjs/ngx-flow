@@ -1,112 +1,62 @@
 import { Directive, ElementRef, Input } from '@angular/core';
-import * as Flow from '@flowjs/flow.js';
+import * as FlowJs from '@flowjs/flow.js';
 import { fromEvent, ReplaySubject, merge, Observable } from 'rxjs';
 import { switchMap, map, scan, startWith, shareReplay } from 'rxjs/operators';
 import { UploadState } from './upload-state';
-import { ProgressEvent, AddEvent, FlowEvent, ErrorEvent, SuccessEvent } from './flow-events';
+import { FileAdded, FileProgress, FileSuccess, FileError, FlowEvent, FileRemoved, EventName } from './flow/flow-events';
+import { Flow } from './flow/flow';
+import { FlowFile } from './flow/flow-file';
+import { Transfer } from './transfer';
+
+interface FlowChangeEvent<T extends FlowEvent> {
+  type: EventName;
+  event: T;
+}
+
+type ListenedEvents = FileProgress | FileSuccess | FileError;
+type FileManipulationEvents = FileAdded | FileRemoved;
 
 @Directive({
   selector: '[flowButton]',
   exportAs: 'flowButton'
 })
 export class ButtonDirective {
-  flow: any;
+  flow: Flow;
 
-  flow$ = new ReplaySubject<any>(1);
+  flow$ = new ReplaySubject<Flow>(1);
 
   transfers$: Observable<UploadState> = this.flow$.pipe(
     switchMap(flow => {
-      const add$ = fromEvent<any>(flow, 'fileAdded').pipe(
-        map(
-          ([flowFile]) =>
-            ({
-              event: 'add',
-              file: flowFile.name
-            } as AddEvent)
-        )
-      );
-      const progress$ = fromEvent<any>(flow, 'fileProgress').pipe(
-        map(
-          ([flowFile]) =>
-            ({
-              event: 'progress',
-              file: flowFile.name,
-              value: flowFile.progress()
-            } as ProgressEvent)
-        )
-      );
-      const success$ = fromEvent<any>(flow, 'fileSuccess').pipe(
-        map(
-          ([flowFile]) =>
-            ({
-              event: 'success',
-              file: flowFile.name
-            } as SuccessEvent)
-        )
-      );
-      const error$ = fromEvent<any>(flow, 'fileError').pipe(
-        map(
-          ([flowFile]) =>
-            ({
-              event: 'error',
-              file: flowFile.name
-            } as ErrorEvent)
-        )
-      );
-      return merge(add$, progress$, success$, error$);
+      return merge(this.flowChangeEvents(flow), this.fileManipulationEvents(flow));
     }),
-    scan((files, event: FlowEvent) => {
-      switch (event.event) {
-        case 'add':
-          files.push({
-            file: event.file
-          });
+    scan<FlowChangeEvent<FileManipulationEvents>, FlowFile[]>((files, {type, event}) => {
+      let file;
+      switch (type) {
+        case 'fileAdded':
+          file = event[0];
+          files.push(file);
           return files;
-        case 'progress':
-          return files.map(file => {
-            if (file.file !== event.file) {
-              return file;
-            }
-            file.progress = event.value;
-            file.status = 'uploading'
-            return file;
-          });
-        case 'success':
-          return files.map(file => {
-            if (file.file !== event.file) {
-              return file;
-            }
-            file.status = 'success';
-            return file;
-          });
-        case 'error':
-          return files.map(file => {
-            if (file.file !== event.file) {
-              return file;
-            }
-            file.status = 'error';
-            return file;
-          });
+        case 'fileRemoved':
+          file = event;
+          return files.filter(item => item !== file);
         default:
           return files;
       }
-    }, []),
-    map(
-      filesArray =>
-        ({
-          transfers: filesArray,
-          totalProgress: filesArray
-            .filter(file => file.progress && file.status !== 'error')
-            .map(file => file.progress)
-            .reduce((acc, curr, _, items) => {
-              return acc + curr / items.length;
-            }, 0)
-        } as UploadState)
-    ),
+    }, [] as FlowFile[]),
+    map((files: FlowFile[]) => ({
+      transfers: files.map(flowFile => ({
+        name: flowFile.name,
+        progress: flowFile.progress(),
+        flowFile
+      })),
+      flow: this.flow,
+      totalProgress: this.flow.progress()
+    })),
     startWith({
       transfers: [],
-      totalProgress: 0
-    }),
+      flow: null,
+      totalProgress: 0.
+    } as UploadState),
     shareReplay(1),
   );
 
@@ -116,14 +66,52 @@ export class ButtonDirective {
 
   @Input()
   set flowConfig(config) {
-    this.flow = new Flow(config);
+    this.flow = new FlowJs(config);
     this.flow.assignBrowse(this.el.nativeElement);
     this.flow$.next(this.flow);
   }
 
   constructor(private el: ElementRef) {}
 
+  flowChangeEvents(flow: Flow): Observable<FlowChangeEvent<ListenedEvents>> {
+    const progress$ = this.listenForEvent<FileProgress>(flow, 'fileProgress');
+    const success$ = this.listenForEvent<FileSuccess>(flow, 'fileSuccess');
+    const error$ = this.listenForEvent<FileError>(flow, 'fileError');
+    return merge(progress$, success$, error$);
+  }
+
+  fileManipulationEvents(flow: Flow): Observable<FlowChangeEvent<FileManipulationEvents>> {
+    const add$ = this.listenForEvent<FileAdded>(flow, 'fileAdded');
+    const remove$ = this.listenForEvent<FileRemoved>(flow, 'fileRemoved');
+    return merge(add$, remove$);
+  }
+
   upload() {
     this.flow.upload();
+  }
+
+  cancel() {
+    this.flow.cancel();
+  }
+
+  cancelFile(file: Transfer) {
+    file.flowFile.cancel();
+  }
+
+  pauseFile(file: Transfer) {
+    file.flowFile.pause();
+  }
+
+  resumeFile(file: Transfer) {
+    file.flowFile.resume();
+  }
+
+  private listenForEvent<T extends FlowEvent>(flow: Flow, eventName: EventName): Observable<FlowChangeEvent<T>> {
+    return fromEvent<T>(flow, eventName).pipe(
+      map(args => ({
+        type: eventName,
+        event: args
+      }))
+    );
   }
 }
