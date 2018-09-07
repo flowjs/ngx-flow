@@ -20,6 +20,8 @@
     <div>success: {{transfer.success}}</div>
     <div>error: {{transfer.error}}</div>
 
+    <img [flowSrc]="transfer">
+
     <button (click)="flow.pauseFile(transfer)">pause</button>
     <button (click)="flow.resumeFile(transfer)">resume</button>
     <button (click)="flow.cancelFile(transfer)">cancel</button>
