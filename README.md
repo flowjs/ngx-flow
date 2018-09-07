@@ -7,7 +7,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ upload single file
 - ✅ upload multiple files
 - ✅ queue management
-- 🚧 error handling
+- ✅ error handling
 - ✅ pause / resume upload
 - ✅ cancel upload, cancel all uploads
 - ✅ upload progress

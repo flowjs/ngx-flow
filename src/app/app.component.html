@@ -2,25 +2,24 @@
 
 <p>Is flowjs supported by the browser? {{flow.flow?.support}}</p>
 
-<input type="file" flowButton [flowConfig]="flowConfig" #flow="flowButton">
+<input type="file" flowButton [flowConfig]="flowConfig" directoryOnly="true" #flow="flowButton">
 
-<table>
-  <tr>
-    <th>filename</th>
-    <th>progress</th>
-    <th>status</th>
-  </tr>
-  <tr *ngFor="let transfer of (flow.transfers$ | async).transfers">
-    <td>{{transfer.name}}</td>
-    <td>{{transfer.progress | percent}}</td>
-    <td>
-      <button (click)="flow.pauseFile(transfer)">pause</button>
-      <button (click)="flow.resumeFile(transfer)">resume</button>
-      <button (click)="flow.cancelFile(transfer)">cancel</button>
-    </td>
-  </tr>
-</table>
+<div class="transfers">
+  <div class="transfer" [ngClass]="{'transfer--error': transfer.error}" *ngFor="let transfer of (flow.transfers$ | async).transfers">
+    <div class="name">name: {{transfer.name}}</div>
+    <div>progress: {{transfer.progress | percent}}</div>
+    <div>size: {{transfer.size | number: '1.0'}} bytes</div>
+    <div>current speed: {{transfer.currentSpeed | number: '1.0'}} bytes/s</div>
+    <div>average speed: {{transfer.averageSpeed | number: '1.0'}} bytes/s</div>
+    <div>time ramining: {{transfer.timeRemaining}}s</div>
+    <div>paused: {{transfer.paused}}</div>
+    <div>error: {{transfer.error}}</div>
 
+    <button (click)="flow.pauseFile(transfer)">pause</button>
+    <button (click)="flow.resumeFile(transfer)">resume</button>
+    <button (click)="flow.cancelFile(transfer)">cancel</button>
+  </div>
+</div>
 <button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
 <button type="button" (click)="flow.cancel()" [disabled]="!(flow.transfers$ | async).transfers.length">Cancel all</button>
 Total progress: {{(flow.transfers$ | async).totalProgress | percent}}

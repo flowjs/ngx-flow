@@ -1,17 +1,22 @@
-table {
-  border: 1px solid gray;
-  margin: 20px;
+.transfers {
+  display: flex;
+  flex-wrap: wrap;
 }
 
-tr {
-  padding: 10px;
-  border: 1px solid gray;
+.transfer {
+  color: white;
+  background: lightsalmon;
+  margin: 15px;
+  padding: 5px;
 }
 
-td {
-  text-align: center;
+.transfer--error {
+  background: red;
+  margin: 15px;
+  padding: 5px;
 }
 
-th {
-  min-width: 200px;
+.name {
+  max-width: 300px;
+  font-weight: bold;
 }
