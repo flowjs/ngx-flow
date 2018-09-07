@@ -6,6 +6,7 @@ export interface Transfer {
   progress: number;
   error: boolean;
   paused: boolean;
+  success: boolean;
   currentSpeed: number;
   averageSpeed: number;
   size: number;

@@ -2,10 +2,14 @@
 
 <p>Is flowjs supported by the browser? {{flow.flow?.support}}</p>
 
-<input type="file" flowButton [flowConfig]="flowConfig" directoryOnly="true" #flow="flowButton">
+<input type="file"
+       flowButton
+       flowConfig="{target: 'http://localhost:3000/upload'}"
+       [flowAttributes]="{accept: 'image/*'}"
+       #flow="flowButton">
 
 <div class="transfers">
-  <div class="transfer" [ngClass]="{'transfer--error': transfer.error}" *ngFor="let transfer of (flow.transfers$ | async).transfers">
+  <div class="transfer" [ngClass]="{'transfer--error': transfer.error, 'transfer--success': transfer.success}" *ngFor="let transfer of (flow.transfers$ | async).transfers">
     <div class="name">name: {{transfer.name}}</div>
     <div>progress: {{transfer.progress | percent}}</div>
     <div>size: {{transfer.size | number: '1.0'}} bytes</div>
@@ -13,6 +17,7 @@
     <div>average speed: {{transfer.averageSpeed | number: '1.0'}} bytes/s</div>
     <div>time ramining: {{transfer.timeRemaining}}s</div>
     <div>paused: {{transfer.paused}}</div>
+    <div>success: {{transfer.success}}</div>
     <div>error: {{transfer.error}}</div>
 
     <button (click)="flow.pauseFile(transfer)">pause</button>

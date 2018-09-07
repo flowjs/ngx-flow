@@ -26,6 +26,7 @@ function flowFile2Transfer(flowFile: FlowFile): Transfer {
     size: flowFile.size,
     paused: flowFile.paused,
     error: flowFile.error,
+    success: flowFile.isComplete(),
     timeRemaining: flowFile.timeRemaining(),
     flowFile
   };
@@ -52,7 +53,7 @@ export class ButtonDirective {
         switch (type) {
           case 'fileAdded':
             file = event[0];
-            if (this.singleFileOnly) {
+            if (this.flowSingleFileOnly) {
               files = [file];
             } else {
               files.push(file);
@@ -83,22 +84,25 @@ export class ButtonDirective {
   somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.progress)));
 
   @Input()
-  directoryOnly = false;
+  flowDirectoryOnly = false;
 
   @Input()
-  singleFileOnly = false;
+  flowSingleFileOnly = false;
+
+  @Input()
+  flowAttributes = null;
 
   @Input()
   set flowConfig(config) {
     this.flow = new FlowJs(config);
-    this.flow.assignBrowse(this.el.nativeElement, this.directoryOnly, this.singleFileOnly);
+    this.flow.assignBrowse(this.el.nativeElement, this.flowDirectoryOnly, this.flowSingleFileOnly, this.flowAttributes);
     this.flow$.next(this.flow);
   }
 
   @Input()
   set existingFlow(flow) {
     this.flow = flow;
-    this.flow.assignBrowse(this.el.nativeElement, this.directoryOnly, this.singleFileOnly);
+    this.flow.assignBrowse(this.el.nativeElement, this.flowDirectoryOnly, this.flowSingleFileOnly);
     this.flow$.next(this.flow);
   }
 

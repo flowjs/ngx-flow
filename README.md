@@ -11,9 +11,9 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ pause / resume upload
 - ✅ cancel upload, cancel all uploads
 - ✅ upload progress
-- ⏱ file / directory restrictions
-- ⏱ file restrictions
+- ✅ file / directory restrictions
 - ⏱ drag & drop
+- ⏱ display uploaded image
 
 ## Install
 
