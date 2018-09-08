@@ -1,4 +1,4 @@
-import { Directive, Optional, Input } from '@angular/core';
+import { Directive, Input } from '@angular/core';
 import { Flow } from './flow/flow';
 import * as FlowJs from '@flowjs/flow.js';
 import { ReplaySubject, Subject, Observable, merge, fromEvent } from 'rxjs';
@@ -7,9 +7,8 @@ import { FlowFile } from './flow/flow-file';
 import { FileProgress, FileSuccess, FileError, FileAdded, FileRemoved, EventName, FlowEvent } from './flow/flow-events';
 import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
-import { DropDirective } from './drop.directive';
-import { ButtonDirective } from './button.directive';
 import { FlowOptions } from './flow/flow-options';
+import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
 
 interface FlowChangeEvent<T extends FlowEvent | void> {
   type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
@@ -20,29 +19,14 @@ type NgxFlowChangeEvent = 'pauseOrResume';
 type ListenedEvents = FileProgress | FileSuccess | FileError;
 type FileManipulationEvents = FileAdded | FileRemoved;
 
-function flowFile2Transfer(flowFile: FlowFile): Transfer {
-  return {
-    name: flowFile.name,
-    progress: flowFile.progress(),
-    averageSpeed: flowFile.averageSpeed,
-    currentSpeed: flowFile.currentSpeed,
-    size: flowFile.size,
-    paused: flowFile.paused,
-    error: flowFile.error,
-    success: flowFile.isComplete(),
-    timeRemaining: flowFile.timeRemaining(),
-    flowFile
-  };
-}
-
 @Directive({
-  selector: '[flow]',
+  selector: '[flowConfig]',
   exportAs: 'flow'
 })
 export class FlowDirective {
 
   @Input()
-  set flow(options: FlowOptions) {
+  set flowConfig(options: FlowOptions) {
     this.flowJs = new FlowJs(options);
     this.flow$.next(this.flowJs);
   }
@@ -149,6 +133,4 @@ export class FlowDirective {
       }) as FlowChangeEvent<T>)
     );
   }
-
-
 }

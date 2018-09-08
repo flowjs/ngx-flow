@@ -2,8 +2,7 @@
 
 <p>Is flowjs supported by the browser? {{flow.flowJs?.support}}</p>
 
-<ng-container [flow]="{target: 'http://localhost:3000/upload', singleFile: true}" #flow="flow"></ng-container>
-
+<ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload', singleFile: true}"></ng-container>
 <input type="file"
        flowButton
        [flow]="flow.flowJs"
@@ -15,7 +14,9 @@
 </div>
 
 <div class="transfers">
-  <div class="transfer" [ngClass]="{'transfer--error': transfer.error, 'transfer--success': transfer.success}" *ngFor="let transfer of (flow.transfers$ | async).transfers">
+  <div class="transfer"
+       [ngClass]="{'transfer--error': transfer.error, 'transfer--success': transfer.success}"
+       *ngFor="let transfer of (flow.transfers$ | async).transfers; trackBy: trackTransfer">
     <div class="name">name: {{transfer.name}}</div>
     <div>progress: {{transfer.progress | percent}}</div>
     <div>size: {{transfer.size | number: '1.0'}} bytes</div>
