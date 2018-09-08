@@ -1,12 +1,18 @@
 <h1>ngx-flow example</h1>
 
-<p>Is flowjs supported by the browser? {{flow.flow?.support}}</p>
+<p>Is flowjs supported by the browser? {{flow.flowJs?.support}}</p>
+
+<ng-container [flow]="{target: 'http://localhost:3000/upload', singleFile: true}" #flow="flow"></ng-container>
 
 <input type="file"
        flowButton
-       flowConfig="{target: 'http://localhost:3000/upload'}"
-       [flowAttributes]="{accept: 'image/*'}"
-       #flow="flowButton">
+       [flow]="flow.flowJs"
+       [flowAttributes]="{accept: 'image/*'}">
+
+<div class="drop-area"
+     flowDrop
+     [flow]="flow.flowJs">
+</div>
 
 <div class="transfers">
   <div class="transfer" [ngClass]="{'transfer--error': transfer.error, 'transfer--success': transfer.success}" *ngFor="let transfer of (flow.transfers$ | async).transfers">

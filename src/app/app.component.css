@@ -26,3 +26,10 @@
 img {
   max-width: 300px;
 }
+
+.drop-area {
+  min-width: 80px;
+  min-height: 80px;
+  border: 1px solid darkblue;
+  background: lightskyblue;
+}
