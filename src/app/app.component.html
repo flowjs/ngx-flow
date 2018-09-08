@@ -2,7 +2,7 @@
 
 <p>Is flowjs supported by the browser? {{flow.flowJs?.support}}</p>
 
-<ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload', singleFile: true}"></ng-container>
+<ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload'}"></ng-container>
 <input type="file"
        flowButton
        [flow]="flow.flowJs"

@@ -2,9 +2,9 @@ import { Directive, Input } from '@angular/core';
 import { Flow } from './flow/flow';
 import * as FlowJs from '@flowjs/flow.js';
 import { ReplaySubject, Subject, Observable, merge, fromEvent } from 'rxjs';
-import { switchMap, scan, map, startWith, shareReplay } from 'rxjs/operators';
+import { switchMap, map, startWith, shareReplay } from 'rxjs/operators';
 import { FlowFile } from './flow/flow-file';
-import { FileProgress, FileSuccess, FileError, FileAdded, FileRemoved, EventName, FlowEvent } from './flow/flow-events';
+import { FileProgress, FileSuccess, FileError, FileRemoved, EventName, FlowEvent, FilesSubmitted, FileRetry } from './flow/flow-events';
 import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
 import { FlowOptions } from './flow/flow-options';
@@ -16,8 +16,6 @@ interface FlowChangeEvent<T extends FlowEvent | void> {
 }
 
 type NgxFlowChangeEvent = 'pauseOrResume';
-type ListenedEvents = FileProgress | FileSuccess | FileError;
-type FileManipulationEvents = FileAdded | FileRemoved;
 
 @Directive({
   selector: '[flowConfig]',
@@ -39,29 +37,9 @@ export class FlowDirective {
 
   transfers$: Observable<UploadState> = this.flow$.pipe(
     switchMap(flow => {
-      return merge(this.flowChangeEvents(flow), this.fileManipulationEvents(flow), this.ngxFlowEvents());
+      return merge(this.flowEvents(flow), this.ngxFlowEvents());
     }),
-    scan<FlowChangeEvent<FileManipulationEvents>, FlowFile[]>(
-      (files, { type, event }) => {
-        let file;
-        switch (type) {
-          case 'fileAdded':
-            file = event[0];
-            if (this.flowJs.opts.singleFile) {
-              files[0] = file;
-            } else {
-              files.push(file);
-            }
-            return files;
-          case 'fileRemoved':
-            file = event;
-            return files.filter(item => item !== file);
-          default:
-            return files;
-        }
-      },
-      [] as FlowFile[]
-    ),
+    map(_ => this.flowJs.files),
     map((files: FlowFile[]) => ({
       transfers: files.map(flowFile => flowFile2Transfer(flowFile)),
       flow: this.flowJs,
@@ -72,27 +50,26 @@ export class FlowDirective {
       flow: null,
       totalProgress: 0
     } as UploadState),
-    shareReplay(1),
+    shareReplay(1)
   );
 
   somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.progress)));
 
   constructor() { }
 
-  flowChangeEvents(flow: Flow): Observable<FlowChangeEvent<ListenedEvents>> {
-    const progress$ = this.listenForEvent<FileProgress>(flow, 'fileProgress');
-    const success$ = this.listenForEvent<FileSuccess>(flow, 'fileSuccess');
-    const error$ = this.listenForEvent<FileError>(flow, 'fileError');
-    return merge(progress$, success$, error$);
+  flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
+    const events = [
+      this.listenForEvent<FilesSubmitted>(flow, 'filesSubmitted'),
+      this.listenForEvent<FileRemoved>(flow, 'fileRemoved'),
+      this.listenForEvent<FileRetry>(flow, 'fileRetry'),
+      this.listenForEvent<FileProgress>(flow, 'fileProgress'),
+      this.listenForEvent<FileSuccess>(flow, 'fileSuccess'),
+      this.listenForEvent<FileError>(flow, 'fileError')
+    ];
+    return merge(...events);
   }
 
-  fileManipulationEvents(flow: Flow): Observable<FlowChangeEvent<FileManipulationEvents>> {
-    const add$ = this.listenForEvent<FileAdded>(flow, 'fileAdded');
-    const remove$ = this.listenForEvent<FileRemoved>(flow, 'fileRemoved');
-    return merge(add$, remove$);
-  }
-
-  ngxFlowEvents(): any {
+  ngxFlowEvents(): Observable<FlowChangeEvent<void>> {
     return this.pauseOrResumeEvent$.pipe(
       map(
         _ =>
@@ -103,24 +80,24 @@ export class FlowDirective {
     );
   }
 
-  upload() {
+  upload(): void {
     this.flowJs.upload();
   }
 
-  cancel() {
+  cancel(): void {
     this.flowJs.cancel();
   }
 
-  cancelFile(file: Transfer) {
+  cancelFile(file: Transfer): void {
     file.flowFile.cancel();
   }
 
-  pauseFile(file: Transfer) {
+  pauseFile(file: Transfer): void {
     file.flowFile.pause();
     this.pauseOrResumeEvent$.next();
   }
 
-  resumeFile(file: Transfer) {
+  resumeFile(file: Transfer): void {
     file.flowFile.resume();
     this.pauseOrResumeEvent$.next();
   }
