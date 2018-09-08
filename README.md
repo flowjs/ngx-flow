@@ -14,7 +14,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ file / directory restrictions
 - ✅ drag & drop
 - ✅ display uploaded image
-- ⏱ tests
+- 🚧 tests
 
 ## Install
 

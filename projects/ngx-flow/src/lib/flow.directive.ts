@@ -1,6 +1,5 @@
-import { Directive, Input } from '@angular/core';
-import { Flow } from './flow/flow';
-import * as FlowJs from '@flowjs/flow.js';
+import { Directive, Input, Inject } from '@angular/core';
+import { Flow, FlowConstructor } from './flow/flow';
 import { ReplaySubject, Subject, Observable, merge, fromEvent } from 'rxjs';
 import { switchMap, map, startWith, shareReplay } from 'rxjs/operators';
 import { FlowFile } from './flow/flow-file';
@@ -9,6 +8,7 @@ import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
 import { FlowOptions } from './flow/flow-options';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
+import { FlowInjectionToken } from './flow-injection-token';
 
 interface FlowChangeEvent<T extends FlowEvent | void> {
   type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
@@ -25,7 +25,7 @@ export class FlowDirective {
 
   @Input()
   set flowConfig(options: FlowOptions) {
-    this.flowJs = new FlowJs(options);
+    this.flowJs = new this.flowConstructor(options);
     this.flow$.next(this.flowJs);
   }
 
@@ -55,7 +55,7 @@ export class FlowDirective {
 
   somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.progress)));
 
-  constructor() { }
+  constructor(@Inject(FlowInjectionToken) private flowConstructor: FlowConstructor) { }
 
   flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
     const events = [
