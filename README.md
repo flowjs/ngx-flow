@@ -169,7 +169,7 @@ export class AppComponent {
 
 ### I need just a single file
 
-Add `signleFile: true` to your flow config:
+Add `singleFile: true` to your flow config:
 
 ```html
 <ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload', singleFile: true}"></ng-container>
