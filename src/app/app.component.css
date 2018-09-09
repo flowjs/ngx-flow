@@ -1,0 +1,35 @@
+.transfers {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.transfer {
+  color: white;
+  background: lightsalmon;
+  margin: 15px;
+  padding: 5px;
+}
+
+.transfer--error {
+  background: red;
+}
+
+.transfer--success {
+  background: green;
+}
+
+.name {
+  max-width: 300px;
+  font-weight: bold;
+}
+
+img {
+  max-width: 300px;
+}
+
+.drop-area {
+  min-width: 80px;
+  min-height: 80px;
+  border: 1px solid darkblue;
+  background: lightskyblue;
+}
