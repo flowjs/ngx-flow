@@ -16,6 +16,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ display uploaded image
 - ✅ tests
 - ✅ upload right after selecting file
+- ⏱ run tests using TravisCI
 - ⏱ demo using Stackblitz
 
 ## Install
