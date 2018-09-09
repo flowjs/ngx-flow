@@ -1,6 +1,6 @@
 # NgxFlow
 
-The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js). This is at very early stage and basically just proof of concept. I am open for API suggestions.
+The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
 ## Goals
 
@@ -15,6 +15,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ drag & drop
 - ✅ display uploaded image
 - 🚧 tests
+- ⏱ upload right after selecting file
 
 ## Install
 
@@ -31,35 +32,47 @@ import { NgxFlowModule } from 'ngx-flow';
 export class AppModule
 ```
 
-## API
+## How to use
 
-Use `flowButton` directive on the file input and save it to the template variable:
+1. First you need to initialize ngx-flow directive and export it as for example `flow` variable:
 
-```html
-<input type="file" flowButton [flowConfig]="flowConfig" #flow="flowButton">
-```
+    ```html
+    <ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload'}"></ng-container>
+    ```
 
-You will have to provide `flowConfig` in your component:
+1. Now you can use either directive `flowButton` for select file dialog:
 
-```typescript
-export class AppComponent {
-  flowConfig = {
-    target: 'http://localhost:3000/upload'
-  };
-}
-```
+    ```html
+    <input type="file"
+          flowButton
+          [flow]="flow.flowJs"
+          [flowAttributes]="{accept: 'image/*'}">
+    ```
 
-You can than subscribe to observable of transfers:
+    Or `flowDrop` for drag&drop feature:
 
-```html
-<div *ngFor="let file of (flow.transfers$ | async).transfers">
-```
+    ```html
+    <div class="drop-area"
+        flowDrop
+        [flow]="flow.flowJs">
+    </div>
+    ```
 
-After adding files you can begin upload using `upload()` method:
+    For both you have to pass `[flow]=flow.flowJs` where `flow` is template variable exported in step 1.
 
-```html
-<button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
-```
+1. You can than subscribe to observable of transfers:
+
+    ```html
+    <div *ngFor="let transfer of (flow.transfers$ | async).transfers">
+    ```
+
+1. After adding files you can begin upload using `upload()` method:
+
+    ```html
+    <button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
+    ```
+
+### How does `transfers$` data looks like?
 
 Observable `flow.transfers$` emits state in form:
 
@@ -91,9 +104,59 @@ Observable `flow.transfers$` emits state in form:
 }
 ```
 
-When you need access to flow.js itself you can find it under `flow` variable.
+## FAQ
+
+### I need access to flow.js object
+
+You can find it under `flow` variable.
 
 ```html
-<input type="file" flowButton [flowConfig]="flowConfig" #flow="flowButton">
-<p>Is flowjs supported by the browser? {{flow.flow?.support}}</p>
+<p>Is flowjs supported by the browser? {{flow.flowJs?.support}}</p>
+```
+
+### I see flickering when upload is in progress
+
+Use `trackBy` for `ngFor`:
+
+```html
+<div *ngFor="let transfer of (flow.transfers$ | async).transfers; trackBy: trackTransfer">
+```
+
+```typescript
+export class AppComponent {
+
+  trackTransfer(transfer: Transfer) {
+    return transfer.id;
+  }
+}
+```
+
+### I need just a single file
+
+Add `signleFile: true` to your flow config:
+
+```html
+<ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload', singleFile: true}"></ng-container>
+```
+
+### I want to upload whole directory
+
+Add `flowDirectoryOnly="true"` to your button:
+
+```html
+<input type="file"
+       flowButton
+       [flow]="flow.flowJs"
+       flowDirectoryOnly="true"
+       [flowAttributes]="{accept: 'image/*'}">
+```
+
+### I want to display image which is going to be uploaded
+
+Use directive `flowSrc`:
+
+```html
+<div *ngFor="let transfer of (flow.transfers$ | async).transfers">
+  <img [flowSrc]="transfer">
+</div>
 ```
