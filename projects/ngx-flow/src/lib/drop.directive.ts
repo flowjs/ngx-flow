@@ -6,7 +6,7 @@ import { Flow } from './flow/flow';
   exportAs: 'flowDrop'
 })
 export class DropDirective implements OnInit {
-  flowJs: Flow;
+  protected flowJs: Flow;
 
   @Input()
   set flow(flow: Flow) {
@@ -25,7 +25,7 @@ export class DropDirective implements OnInit {
     this.flowJs.unAssignDrop(this.el.nativeElement);
   }
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  constructor(protected el: ElementRef, protected renderer: Renderer2) {}
 
   ngOnInit() {
     this.renderer.listen('body', 'drop', event => event.preventDefault());

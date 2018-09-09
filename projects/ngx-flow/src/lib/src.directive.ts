@@ -5,7 +5,7 @@ import { Transfer } from './transfer';
   selector: '[flowSrc]'
 })
 export class SrcDirective {
-  fileReader = new FileReader();
+  protected fileReader = new FileReader();
 
   @Input()
   set flowSrc(transfer: Transfer) {

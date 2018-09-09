@@ -5,21 +5,21 @@ import { Flow } from './flow/flow';
   selector: '[flowButton]'
 })
 export class ButtonDirective {
-  _directoryOnly = false;
+  protected _directoryOnly = false;
   @Input()
   set flowDirectoryOnly(directoriesOnly: boolean) {
     this._directoryOnly = directoriesOnly;
     this.setup();
   }
 
-  _attributes: object;
+  protected _attributes: object;
   @Input()
   set flowAttributes(attributes: object) {
     this._attributes = attributes;
     this.setup();
   }
 
-  private _flow: Flow = null;
+  protected _flow: Flow = null;
   @Input()
   set flow(flow: Flow) {
     this._flow = flow;
@@ -33,5 +33,5 @@ export class ButtonDirective {
     this._flow.assignBrowse(this.el.nativeElement, this._directoryOnly, this._flow.opts.singleFile, this._attributes);
   }
 
-  constructor(private el: ElementRef) {}
+  constructor(protected el: ElementRef) {}
 }

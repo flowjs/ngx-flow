@@ -39,7 +39,7 @@ export class FlowDirective {
 
   flowJs: Flow;
 
-  flow$ = new ReplaySubject<Flow>(1);
+  protected flow$ = new ReplaySubject<Flow>(1);
 
   pauseOrResumeEvent$ = new Subject<void>();
 
@@ -62,9 +62,9 @@ export class FlowDirective {
 
   somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.success)));
 
-  constructor(@Inject(FlowInjectionToken) private flowConstructor: FlowConstructor) {}
+  constructor(@Inject(FlowInjectionToken) protected flowConstructor: FlowConstructor) {}
 
-  flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
+  protected flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
     const events = [
       this.listenForEvent<FilesSubmitted>(flow, 'filesSubmitted'),
       this.listenForEvent<FileRemoved>(flow, 'fileRemoved'),
@@ -76,7 +76,7 @@ export class FlowDirective {
     return merge(...events);
   }
 
-  ngxFlowEvents(): Observable<FlowChangeEvent<void>> {
+  protected ngxFlowEvents(): Observable<FlowChangeEvent<void>> {
     return this.pauseOrResumeEvent$.pipe(
       map(
         _ =>
@@ -109,7 +109,7 @@ export class FlowDirective {
     this.pauseOrResumeEvent$.next();
   }
 
-  private listenForEvent<T extends FlowEvent>(flow: Flow, eventName: EventName): Observable<FlowChangeEvent<T>> {
+  protected listenForEvent<T extends FlowEvent>(flow: Flow, eventName: EventName): Observable<FlowChangeEvent<T>> {
     return fromEvent<T>(flow, eventName).pipe(
       map(
         args =>
