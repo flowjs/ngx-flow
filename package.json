@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build ngx-flow --prod",
     "test": "ng test ngx-flow",
+    "server": "node server/app.js",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },

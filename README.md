@@ -16,6 +16,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ display uploaded image
 - ✅ tests
 - ✅ upload right after selecting file
+- ⏱ demo using Stackblitz
 
 ## Install
 
@@ -33,6 +34,8 @@ export class AppModule
 ```
 
 ## How to use
+
+1. Start up server. There is a server example taken from [flow.js](https://github.com/flowjs/flow.js) here in `server` directory. In this repo you can run it using `npm run server`.
 
 1. First you need to initialize ngx-flow directive and export it as for example `flow` variable:
 
@@ -72,7 +75,7 @@ export class AppModule
     <button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
     ```
 
-### How does `transfers$` data looks like?
+### How does `transfers$` data look like?
 
 Observable `flow.transfers$` emits state in form:
 
@@ -83,24 +86,57 @@ Observable `flow.transfers$` emits state in form:
     {
       name: "somefile.txt",
       flowFile: FlowFile,
-      progress: 0
+      progress: number,
+      error: boolean,
+      paused: boolean,
+      success: boolean,
+      complete: boolean,
+      currentSpeed: number,
+      averageSpeed: number,
+      size: number,
+      timeRemaining: number,
     },
     {
       name: "uploading.txt",
       flowFile: FlowFile,
-      progress: 0.5
+      progress: 0.5,
+      error: false,
+      paused: false,
+      success: false,
+      complete: false,
+      currentSpeed: number,
+      averageSpeed: number,
+      size: number,
+      timeRemaining: number,
     },
     {
       name: "failed-to-upload.txt",
       flowFile: FlowFile,
-      progress: 0.8
+      progress: number,
+      error: true,
+      paused: false,
+      success: false,
+      complete: true,
+      currentSpeed: number,
+      averageSpeed: number,
+      size: number,
+      timeRemaining: number,
     }
     {
       name: "uploaded.txt",
       flowFile: FlowFile,
-      progress: 1
+      progress: number,
+      error: false,
+      paused: false,
+      success: true,
+      complete: true,
+      currentSpeed: number,
+      averageSpeed: number,
+      size: number,
+      timeRemaining: number,
     }
-  ]
+  ],
+  flow: { /* flow.js instance*/ }
 }
 ```
 
