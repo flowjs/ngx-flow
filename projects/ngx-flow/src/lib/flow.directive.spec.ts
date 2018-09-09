@@ -1,12 +1,12 @@
-import { FlowDirective } from './flow.directive';
 import { Component, ViewChild } from '@angular/core';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { FlowInjectionToken } from './flow-injection-token';
-import { FlowOptions } from './flow/flow-options';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { Subject } from 'rxjs';
 import { first, skip } from 'rxjs/operators';
-import { Subject, of } from 'rxjs';
-import { FlowFile } from './flow/flow-file';
+import { FlowInjectionToken } from './flow-injection-token';
+import { FlowDirective } from './flow.directive';
 import { FileSuccess } from './flow/flow-events';
+import { FlowFile } from './flow/flow-file';
+import { FlowOptions } from './flow/flow-options';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`
@@ -64,12 +64,20 @@ describe('Directive: Flow integration tests', () => {
     spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
     fixture.detectChanges();
     component.flow.flowJs.progress = jasmine.createSpy('progress').and.returnValue(0);
-    component.flow.flowJs.files = [{
-      name: 'file.txt',
-      progress() { return 0; },
-      isComplete() { return false; },
-      timeRemaining() { return 0; }
-    } as FlowFile];
+    component.flow.flowJs.files = [
+      {
+        name: 'file.txt',
+        progress() {
+          return 0;
+        },
+        isComplete() {
+          return false;
+        },
+        timeRemaining() {
+          return 0;
+        }
+      } as FlowFile
+    ];
     component.flow.transfers$
       .pipe(
         skip(1), // skip initial emit with empty array
@@ -129,7 +137,7 @@ describe('Directive: Flow integration tests', () => {
     expect(fileMock.flowFile.cancel).toHaveBeenCalled();
   });
 
-  it('should pause file and emit event', (done) => {
+  it('should pause file and emit event', done => {
     fixture.detectChanges();
     const fileMock = {
       flowFile: {
@@ -144,7 +152,7 @@ describe('Directive: Flow integration tests', () => {
     expect(fileMock.flowFile.pause).toHaveBeenCalled();
   });
 
-  it('should resume file and emit event', (done) => {
+  it('should resume file and emit event', done => {
     fixture.detectChanges();
     const fileMock = {
       flowFile: {
@@ -159,17 +167,25 @@ describe('Directive: Flow integration tests', () => {
     expect(fileMock.flowFile.resume).toHaveBeenCalled();
   });
 
-  it('should tell us if there is something to upload', (done) => {
+  it('should tell us if there is something to upload', done => {
     const flowJsEventEmitter = new Subject<void>();
     spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
     fixture.detectChanges();
     component.flow.flowJs.progress = jasmine.createSpy('progress').and.returnValue(0);
-    component.flow.flowJs.files = [{
-      name: 'file.txt',
-      progress() { return 0; },
-      isComplete() { return false; },
-      timeRemaining() { return 0; }
-    } as FlowFile];
+    component.flow.flowJs.files = [
+      {
+        name: 'file.txt',
+        progress() {
+          return 0;
+        },
+        isComplete() {
+          return false;
+        },
+        timeRemaining() {
+          return 0;
+        }
+      } as FlowFile
+    ];
     component.flow.somethingToUpload$
       .pipe(
         skip(1), // skip initial emit with empty array
@@ -183,17 +199,25 @@ describe('Directive: Flow integration tests', () => {
     flowJsEventEmitter.next();
   });
 
-  it('should tell us if there is nothing to upload', (done) => {
+  it('should tell us if there is nothing to upload', done => {
     const flowJsEventEmitter = new Subject<void>();
     spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
     fixture.detectChanges();
     component.flow.flowJs.progress = jasmine.createSpy('progress').and.returnValue(0);
-    component.flow.flowJs.files = [{
-      name: 'file.txt',
-      progress() { return 1; },
-      isComplete() { return true; },
-      timeRemaining() { return 0; }
-    } as FlowFile];
+    component.flow.flowJs.files = [
+      {
+        name: 'file.txt',
+        progress() {
+          return 1;
+        },
+        isComplete() {
+          return true;
+        },
+        timeRemaining() {
+          return 0;
+        }
+      } as FlowFile
+    ];
     component.flow.somethingToUpload$
       .pipe(
         skip(1), // skip initial emit with empty array
@@ -207,21 +231,16 @@ describe('Directive: Flow integration tests', () => {
     flowJsEventEmitter.next();
   });
 
-
-  it('should emit events', (done) => {
+  it('should emit events', done => {
     const flowJsEventEmitter = new Subject<FileSuccess>();
     spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
     fixture.detectChanges();
-    component.flow.events$
-      .pipe(
-        first()
-      )
-      .subscribe(event => {
-        expect(event[0].name).toBe('file.txt');
-        expect(event[1]).toBe('fileSuccess');
-        done();
-      });
+    component.flow.events$.pipe(first()).subscribe(event => {
+      expect(event[0].name).toBe('file.txt');
+      expect(event[1]).toBe('fileSuccess');
+      done();
+    });
 
-    flowJsEventEmitter.next([{name: 'file.txt'} as any, 'fileSuccess', null]);
+    flowJsEventEmitter.next([{ name: 'file.txt' } as any, 'fileSuccess', null]);
   });
 });

@@ -1,14 +1,23 @@
-import { Directive, Input, Inject, OnInit } from '@angular/core';
+import { Directive, Inject, Input } from '@angular/core';
+import { fromEvent, merge, Observable, ReplaySubject, Subject } from 'rxjs';
+import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
+import { FlowInjectionToken } from './flow-injection-token';
 import { Flow, FlowConstructor } from './flow/flow';
-import { ReplaySubject, Subject, Observable, merge, fromEvent } from 'rxjs';
-import { switchMap, map, startWith, shareReplay, tap } from 'rxjs/operators';
+import {
+  EventName,
+  FileError,
+  FileProgress,
+  FileRemoved,
+  FileRetry,
+  FilesSubmitted,
+  FileSuccess,
+  FlowEvent
+} from './flow/flow-events';
 import { FlowFile } from './flow/flow-file';
-import { Transfer } from './transfer';
-import { UploadState } from './upload-state';
 import { FlowOptions } from './flow/flow-options';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
-import { FlowInjectionToken } from './flow-injection-token';
-import { FlowEvent, EventName, FilesSubmitted, FileRemoved, FileRetry, FileProgress, FileSuccess, FileError } from './flow/flow-events';
+import { Transfer } from './transfer';
+import { UploadState } from './upload-state';
 
 interface FlowChangeEvent<T extends FlowEvent | void> {
   type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
@@ -22,7 +31,6 @@ type NgxFlowChangeEvent = 'pauseOrResume';
   exportAs: 'flow'
 })
 export class FlowDirective {
-
   @Input()
   set flowConfig(options: FlowOptions) {
     this.flowJs = new this.flowConstructor(options);
@@ -54,7 +62,7 @@ export class FlowDirective {
 
   somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.success)));
 
-  constructor(@Inject(FlowInjectionToken) private flowConstructor: FlowConstructor) { }
+  constructor(@Inject(FlowInjectionToken) private flowConstructor: FlowConstructor) {}
 
   flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
     const events = [
@@ -103,10 +111,13 @@ export class FlowDirective {
 
   private listenForEvent<T extends FlowEvent>(flow: Flow, eventName: EventName): Observable<FlowChangeEvent<T>> {
     return fromEvent<T>(flow, eventName).pipe(
-      map(args => ({
-        type: eventName,
-        event: args
-      }) as FlowChangeEvent<T>)
+      map(
+        args =>
+          ({
+            type: eventName,
+            event: args
+          } as FlowChangeEvent<T>)
+      )
     );
   }
 }

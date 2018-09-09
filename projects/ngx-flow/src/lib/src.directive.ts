@@ -1,11 +1,10 @@
-import { Directive, Input, ElementRef } from '@angular/core';
+import { Directive, ElementRef, Input } from '@angular/core';
 import { Transfer } from './transfer';
 
 @Directive({
   selector: '[flowSrc]'
 })
 export class SrcDirective {
-
   fileReader = new FileReader();
 
   @Input()
@@ -17,5 +16,5 @@ export class SrcDirective {
     };
   }
 
-  constructor(private el: ElementRef) { }
+  constructor(private el: ElementRef) {}
 }

@@ -1,7 +1,7 @@
-import { SrcDirective } from './src.directive';
 import { Component, DebugElement } from '@angular/core';
-import { ComponentFixture, TestBed, tick, fakeAsync, async } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { SrcDirective } from './src.directive';
 
 @Component({
   template: `<img [flowSrc]="transfer">`
@@ -25,7 +25,7 @@ describe('Directive: Src', () => {
   });
 
   it('should add src attribute with image data', (done: DoneFn) => {
-    const blob = new Blob(['data-data-data'], {type : 'application/json'});
+    const blob = new Blob(['data-data-data'], { type: 'application/json' });
     component.transfer = {
       flowFile: {
         file: blob

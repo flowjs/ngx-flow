@@ -1,7 +1,7 @@
-import { ButtonDirective } from './button.directive';
 import { Component, DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { ButtonDirective } from './button.directive';
 
 @Component({
   template: `<input type="file"
