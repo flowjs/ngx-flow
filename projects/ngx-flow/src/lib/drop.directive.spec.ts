@@ -1,5 +1,5 @@
 import { DropDirective } from './drop.directive';
-import { Component, DebugElement, ViewChild } from '@angular/core';
+import { Component, DebugElement, ViewChild, Renderer2 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -12,14 +12,16 @@ class TestComponent {
   @ViewChild('flowDrop')
   flowDrop: DropDirective;
 }
-describe('FlowDropDirective', () => {
+describe('Directive: Drop', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
   let dropAreElement: DebugElement;
+  let renderer: Renderer2;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestComponent, DropDirective]
+      declarations: [TestComponent, DropDirective],
+      providers: [Renderer2]
     });
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
@@ -52,5 +54,15 @@ describe('FlowDropDirective', () => {
     fixture.detectChanges();
     expect(component.flowJs.assignDrop).toHaveBeenCalledWith(dropAreElement.nativeElement);
   });
-});
 
+  it('should attach drop and dragover listeners to body', () => {
+    renderer = fixture.componentRef.injector.get(Renderer2);
+    spyOn(renderer, 'listen').and.callThrough();
+    fixture.detectChanges();
+    // cannot use toHaveBeenCalledWith: https://github.com/jasmine/jasmine/issues/228
+    expect((renderer.listen as any).calls.allArgs()).toEqual([
+      ['body', 'drop', jasmine.any(Function)],
+      ['body', 'dragover', jasmine.any(Function)]
+    ]);
+  });
+});

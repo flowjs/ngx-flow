@@ -1,11 +1,11 @@
-import { Directive, Input, ElementRef, Renderer2 } from '@angular/core';
+import { Directive, Input, ElementRef, Renderer2, OnInit } from '@angular/core';
 import { Flow } from './flow/flow';
 
 @Directive({
   selector: '[flowDrop]',
   exportAs: 'flowDrop'
 })
-export class DropDirective {
+export class DropDirective implements OnInit {
   flowJs: Flow;
 
   @Input()
@@ -25,8 +25,10 @@ export class DropDirective {
     this.flowJs.unAssignDrop(this.el.nativeElement);
   }
 
-  constructor(private el: ElementRef, renderer: Renderer2) {
-    renderer.listen('body', 'drop', event => event.preventDefault());
-    renderer.listen('body', 'dragover', event => event.preventDefault());
+  constructor(private el: ElementRef, private renderer: Renderer2) {}
+
+  ngOnInit() {
+    this.renderer.listen('body', 'drop', event => event.preventDefault());
+    this.renderer.listen('body', 'dragover', event => event.preventDefault());
   }
 }

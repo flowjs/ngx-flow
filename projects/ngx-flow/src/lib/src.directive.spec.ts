@@ -10,7 +10,7 @@ class TestComponent {
   transfer: any;
 }
 
-describe('FlowSrcDirective', () => {
+describe('Directive: Src', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
   let imgElement: DebugElement;
@@ -22,14 +22,6 @@ describe('FlowSrcDirective', () => {
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
     imgElement = fixture.debugElement.query(By.css('img'));
-  });
-
-  beforeEach(() => {
-    window['__zone_symbol__FakeAsyncTestMacroTask'] = [
-      {
-        source: 'FileReader.onload'
-      }
-    ];
   });
 
   it('should add src attribute with image data', (done: DoneFn) => {
