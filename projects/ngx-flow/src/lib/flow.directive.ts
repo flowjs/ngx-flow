@@ -8,6 +8,14 @@ import { UploadState } from './upload-state';
 import { FlowOptions } from './flow/flow-options';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
 import { FlowInjectionToken } from './flow-injection-token';
+import { FlowEvent, EventName, FilesSubmitted, FileRemoved, FileRetry, FileProgress, FileSuccess, FileError } from './flow/flow-events';
+
+interface FlowChangeEvent<T extends FlowEvent | void> {
+  type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
+  event: T;
+}
+
+type NgxFlowChangeEvent = 'pauseOrResume';
 
 @Directive({
   selector: '[flowConfig]',
@@ -27,10 +35,9 @@ export class FlowDirective {
 
   pauseOrResumeEvent$ = new Subject<void>();
 
-  transfers$ = this.flow$.pipe(
-    switchMap(flow => {
-      return merge(this.flowEvents(flow), this.ngxFlowEvents());
-    }),
+  events$ = this.flow$.pipe(switchMap(flow => merge(this.flowEvents(flow), this.ngxFlowEvents())));
+
+  transfers$ = this.events$.pipe(
     map(_ => this.flowJs.files),
     map((files: FlowFile[]) => ({
       transfers: files.map(flowFile => flowFile2Transfer(flowFile)),
@@ -49,20 +56,27 @@ export class FlowDirective {
 
   constructor(@Inject(FlowInjectionToken) private flowConstructor: FlowConstructor) { }
 
-  flowEvents(flow: Flow): Observable<void> {
+  flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
     const events = [
-      fromEvent<void>(flow, 'filesSubmitted'),
-      fromEvent<void>(flow, 'fileRemoved'),
-      fromEvent<void>(flow, 'fileRetry'),
-      fromEvent<void>(flow, 'fileProgress'),
-      fromEvent<void>(flow, 'fileSuccess'),
-      fromEvent<void>(flow, 'fileError')
+      this.listenForEvent<FilesSubmitted>(flow, 'filesSubmitted'),
+      this.listenForEvent<FileRemoved>(flow, 'fileRemoved'),
+      this.listenForEvent<FileRetry>(flow, 'fileRetry'),
+      this.listenForEvent<FileProgress>(flow, 'fileProgress'),
+      this.listenForEvent<FileSuccess>(flow, 'fileSuccess'),
+      this.listenForEvent<FileError>(flow, 'fileError')
     ];
     return merge(...events);
   }
 
-  ngxFlowEvents(): Observable<void> {
-    return this.pauseOrResumeEvent$;
+  ngxFlowEvents(): Observable<FlowChangeEvent<void>> {
+    return this.pauseOrResumeEvent$.pipe(
+      map(
+        _ =>
+          ({
+            type: 'pauseOrResume'
+          } as FlowChangeEvent<void>)
+      )
+    );
   }
 
   upload(): void {
@@ -85,5 +99,14 @@ export class FlowDirective {
   resumeFile(file: Transfer): void {
     file.flowFile.resume();
     this.pauseOrResumeEvent$.next();
+  }
+
+  private listenForEvent<T extends FlowEvent>(flow: Flow, eventName: EventName): Observable<FlowChangeEvent<T>> {
+    return fromEvent<T>(flow, eventName).pipe(
+      map(args => ({
+        type: eventName,
+        event: args
+      }) as FlowChangeEvent<T>)
+    );
   }
 }

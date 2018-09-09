@@ -2,7 +2,7 @@
 
 The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
-## Goals
+## Roadmap
 
 - ✅ upload single file
 - ✅ upload multiple files
@@ -14,8 +14,8 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ file / directory restrictions
 - ✅ drag & drop
 - ✅ display uploaded image
-- 🚧 tests
-- ⏱ upload right after selecting file
+- ✅ tests
+- ✅ upload right after selecting file
 
 ## Install
 
@@ -159,4 +159,30 @@ Use directive `flowSrc`:
 <div *ngFor="let transfer of (flow.transfers$ | async).transfers">
   <img [flowSrc]="transfer">
 </div>
+```
+
+### How to trigger upload right after picking the file?
+
+Subscribe to `events$`. NgxFlow listens for these events: `filesSubmitted`, `fileRemoved`, `fileRetry`, `fileProgress`, `fileSuccess`, `fileError` of flow.js. Event `fileSubmitted` is fired when user drops or selects  a file.
+
+```typescript
+export class AppComponent implements AfterViewInit, OnDestroy {
+
+  @ViewChild('flow')
+  flow: FlowDirective;
+
+  autoUploadSubscription: Subscription;
+
+  ngAfterViewInit() {
+    this.autoUploadSubscription = this.flow.events$.subscribe(event => {
+      if (event.type === 'filesSubmitted') {
+        this.flow.upload();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.autoUploadSubscription.unsubscribe();
+  }
+}
 ```

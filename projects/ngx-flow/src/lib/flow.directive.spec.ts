@@ -6,6 +6,7 @@ import { FlowOptions } from './flow/flow-options';
 import { first, skip } from 'rxjs/operators';
 import { Subject, of } from 'rxjs';
 import { FlowFile } from './flow/flow-file';
+import { FileSuccess } from './flow/flow-events';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`
@@ -204,5 +205,23 @@ describe('Directive: Flow integration tests', () => {
       });
 
     flowJsEventEmitter.next();
+  });
+
+
+  it('should emit events', (done) => {
+    const flowJsEventEmitter = new Subject<FileSuccess>();
+    spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
+    fixture.detectChanges();
+    component.flow.events$
+      .pipe(
+        first()
+      )
+      .subscribe(event => {
+        expect(event[0].name).toBe('file.txt');
+        expect(event[1]).toBe('fileSuccess');
+        done();
+      });
+
+    flowJsEventEmitter.next([{name: 'file.txt'} as any, 'fileSuccess', null]);
   });
 });

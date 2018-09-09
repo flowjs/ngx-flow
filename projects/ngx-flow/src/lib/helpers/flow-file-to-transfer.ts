@@ -11,7 +11,8 @@ export function flowFile2Transfer(flowFile: FlowFile): Transfer {
     size: flowFile.size,
     paused: flowFile.paused,
     error: flowFile.error,
-    success: flowFile.isComplete(),
+    complete: flowFile.isComplete(),
+    success: flowFile.isComplete() && !flowFile.error,
     timeRemaining: flowFile.timeRemaining(),
     flowFile
   };
