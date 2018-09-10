@@ -17,14 +17,14 @@ import { FlowFile } from './flow/flow-file';
 import { FlowOptions } from './flow/flow-options';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
 import { Transfer } from './transfer';
-import { UploadState } from './upload-state';
+import { UploadState } from 'ngx-flow/ngx-flow';
 
 interface FlowChangeEvent<T extends FlowEvent | void> {
   type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
   event: T;
 }
 
-type NgxFlowChangeEvent = 'pauseOrResume';
+type NgxFlowChangeEvent = 'pauseOrResume' | 'newFlowJsInstance';
 
 @Directive({
   selector: '[flowConfig]',
@@ -45,26 +45,21 @@ export class FlowDirective {
 
   events$ = this.flow$.pipe(switchMap(flow => merge(this.flowEvents(flow), this.ngxFlowEvents())));
 
-  transfers$ = this.events$.pipe(
+  transfers$: Observable<UploadState> = this.events$.pipe(
     map(_ => this.flowJs.files),
-    map((files: FlowFile[]) => ({
+    map((files: FlowFile[] = []) => ({
       transfers: files.map(flowFile => flowFile2Transfer(flowFile)),
       flow: this.flowJs,
       totalProgress: this.flowJs.progress()
     })),
-    startWith({
-      transfers: [],
-      flow: null,
-      totalProgress: 0
-    } as UploadState),
     shareReplay(1)
   );
 
-  somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.success)));
+  somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.success), startWith(false)));
 
   constructor(@Inject(FlowInjectionToken) protected flowConstructor: FlowConstructor) {}
 
-  protected flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
+  private flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
     const events = [
       this.listenForEvent<FilesSubmitted>(flow, 'filesSubmitted'),
       this.listenForEvent<FileRemoved>(flow, 'fileRemoved'),
@@ -76,8 +71,8 @@ export class FlowDirective {
     return merge(...events);
   }
 
-  protected ngxFlowEvents(): Observable<FlowChangeEvent<void>> {
-    return this.pauseOrResumeEvent$.pipe(
+  private ngxFlowEvents(): Observable<FlowChangeEvent<void>> {
+    const pauseOrResumeEvent$ = this.pauseOrResumeEvent$.pipe(
       map(
         _ =>
           ({
@@ -85,6 +80,19 @@ export class FlowDirective {
           } as FlowChangeEvent<void>)
       )
     );
+    const newFlowInstanceEvent$ = this.flow$.pipe(
+      map(
+        _ =>
+          ({
+            type: 'newFlowJsInstance'
+          } as FlowChangeEvent<void>)
+      )
+    );
+    const events = [
+      pauseOrResumeEvent$,
+      newFlowInstanceEvent$
+    ];
+    return merge(...events);
   }
 
   upload(): void {

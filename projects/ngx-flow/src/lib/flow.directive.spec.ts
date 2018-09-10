@@ -20,10 +20,16 @@ class TestComponent {
 
 class FlowMock {
   constructor(public opts: Partial<FlowOptions>) {}
-  flowJsEventEmitters: any;
+  flowJsEventEmitters = {};
   addEventListener = jasmine.createSpy().and.callFake((eventName: string, cb: () => void) => {
     this.flowJsEventEmitters[eventName] = cb;
   });
+  removeEventListener = jasmine.createSpy().and.callFake((eventName: string) => {
+    delete this.flowJsEventEmitters[eventName];
+  });
+  progress() {
+    return 0;
+  }
 }
 
 describe('Directive: Flow integration tests', () => {
@@ -51,19 +57,20 @@ describe('Directive: Flow integration tests', () => {
   });
 
   it('should emit new flowjs instance when new config is provided', fakeAsync(() => {
+    component.flow.transfers$
+      .pipe(first())
+      .subscribe(transfers => expect(transfers.flow.opts.target).toBe('http://localhost:3000/upload'));
     fixture.detectChanges();
-    component.flow.flow$.pipe(first()).subscribe(flow => expect(flow.opts.target).toBe('http://localhost:3000/upload'));
     tick();
     component.config = { target: 'http://localhost:4000/upload' };
     fixture.detectChanges();
-    component.flow.flow$.pipe(first()).subscribe(flow => expect(flow.opts.target).toBe('http://localhost:4000/upload'));
+    component.flow.transfers$
+      .pipe(first())
+      .subscribe(transfers => expect(transfers.flow.opts.target).toBe('http://localhost:4000/upload'));
   }));
 
   it('should emit transfer when file is added', (done: DoneFn) => {
-    const flowJsEventEmitter = new Subject<void>();
-    spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
     fixture.detectChanges();
-    component.flow.flowJs.progress = jasmine.createSpy('progress').and.returnValue(0);
     component.flow.flowJs.files = [
       {
         name: 'file.txt',
@@ -88,17 +95,12 @@ describe('Directive: Flow integration tests', () => {
         expect(transfers.transfers[0].name).toBe('file.txt');
         done();
       });
-
-    flowJsEventEmitter.next();
+    (component.flow.flowJs as any).flowJsEventEmitters['filesSubmitted']();
   });
 
   it('should emit transfers on pause/resume', (done: DoneFn) => {
-    const pauseOrResume$ = new Subject<void>();
-    spyOn(component.flow, 'flowEvents').and.returnValue([]);
-    spyOn(component.flow, 'ngxFlowEvents').and.returnValue(pauseOrResume$);
     fixture.detectChanges();
     component.flow.flowJs.files = [];
-    component.flow.flowJs.progress = jasmine.createSpy('progress').and.returnValue(0);
     component.flow.transfers$
       .pipe(
         skip(1), // skip initial emit with empty array
@@ -109,7 +111,12 @@ describe('Directive: Flow integration tests', () => {
         done();
       });
 
-    pauseOrResume$.next();
+    const fileMock = {
+      flowFile: {
+        pause: jasmine.createSpy()
+      }
+    };
+    component.flow.pauseFile(fileMock as any);
   });
 
   it('should trigger flowJs upload on upload', () => {
@@ -168,10 +175,7 @@ describe('Directive: Flow integration tests', () => {
   });
 
   it('should tell us if there is something to upload', done => {
-    const flowJsEventEmitter = new Subject<void>();
-    spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
     fixture.detectChanges();
-    component.flow.flowJs.progress = jasmine.createSpy('progress').and.returnValue(0);
     component.flow.flowJs.files = [
       {
         name: 'file.txt',
@@ -196,14 +200,11 @@ describe('Directive: Flow integration tests', () => {
         done();
       });
 
-    flowJsEventEmitter.next();
+    (component.flow.flowJs as any).flowJsEventEmitters['filesSubmitted']();
   });
 
-  it('should tell us if there is nothing to upload', done => {
-    const flowJsEventEmitter = new Subject<void>();
-    spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
+  it('should tell us if there is nothing to upload after everything was uploaded', done => {
     fixture.detectChanges();
-    component.flow.flowJs.progress = jasmine.createSpy('progress').and.returnValue(0);
     component.flow.flowJs.files = [
       {
         name: 'file.txt',
@@ -218,29 +219,31 @@ describe('Directive: Flow integration tests', () => {
         }
       } as FlowFile
     ];
-    component.flow.somethingToUpload$
-      .pipe(
-        skip(1), // skip initial emit with empty array
-        first()
-      )
-      .subscribe(somethingToUpload => {
-        expect(somethingToUpload).toBeFalsy();
-        done();
-      });
-
-    flowJsEventEmitter.next();
-  });
-
-  it('should emit events', done => {
-    const flowJsEventEmitter = new Subject<FileSuccess>();
-    spyOn(component.flow, 'flowEvents').and.returnValue(flowJsEventEmitter);
-    fixture.detectChanges();
-    component.flow.events$.pipe(first()).subscribe(event => {
-      expect(event[0].name).toBe('file.txt');
-      expect(event[1]).toBe('fileSuccess');
+    component.flow.somethingToUpload$.pipe(first()).subscribe(somethingToUpload => {
+      expect(somethingToUpload).toBeFalsy();
       done();
     });
+  });
 
-    flowJsEventEmitter.next([{ name: 'file.txt' } as any, 'fileSuccess', null]);
+  it('should emit event when file is succesfully uploaded', done => {
+    fixture.detectChanges();
+    component.flow.events$
+      .pipe(
+        skip(1), // skip new flowjs instance event
+        first()
+      )
+      .subscribe(event => {
+        expect(event.event[0].name).toBe('file.txt');
+        expect(event.type).toBe('fileSuccess');
+        done();
+      });
+    const fileSuccessEvent: FileSuccess = [
+      {
+        name: 'file.txt'
+      } as FlowFile,
+      '',
+      null
+    ];
+    (component.flow.flowJs as any).flowJsEventEmitters['fileSuccess'](fileSuccessEvent);
   });
 });
