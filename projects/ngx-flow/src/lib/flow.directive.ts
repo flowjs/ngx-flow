@@ -17,7 +17,7 @@ import { FlowFile } from './flow/flow-file';
 import { FlowOptions } from './flow/flow-options';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
 import { Transfer } from './transfer';
-import { UploadState } from 'ngx-flow/ngx-flow';
+import { UploadState } from './upload-state';
 
 interface FlowChangeEvent<T extends FlowEvent | void> {
   type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
@@ -55,7 +55,9 @@ export class FlowDirective {
     shareReplay(1)
   );
 
-  somethingToUpload$ = this.transfers$.pipe(map(state => state.transfers.some(file => !file.success), startWith(false)));
+  somethingToUpload$ = this.transfers$.pipe(
+    map(state => state.transfers.some(file => !file.success), startWith(false))
+  );
 
   constructor(@Inject(FlowInjectionToken) protected flowConstructor: FlowConstructor) {}
 
@@ -88,10 +90,7 @@ export class FlowDirective {
           } as FlowChangeEvent<void>)
       )
     );
-    const events = [
-      pauseOrResumeEvent$,
-      newFlowInstanceEvent$
-    ];
+    const events = [pauseOrResumeEvent$, newFlowInstanceEvent$];
     return merge(...events);
   }
 
