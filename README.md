@@ -5,6 +5,12 @@
 
 The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
+## Demo
+
+[https://stackblitz.com/edit/ngx-flow-example](https://stackblitz.com/edit/ngx-flow-example)
+
+You can also find example source code in the `src` folder.
+
 ## Roadmap
 
 - ✅ upload single file
@@ -20,7 +26,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ tests
 - ✅ upload right after selecting file
 - ✅ run tests using TravisCI
-- ⏱ demo using Stackblitz
+- ✅ demo using Stackblitz
 
 ## Install
 
