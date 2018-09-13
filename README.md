@@ -1,5 +1,8 @@
 # NgxFlow
 
+[![Build Status](https://travis-ci.com/MartinNuc/ng2-flow.svg?branch=master)](https://travis-ci.com/MartinNuc/ng2-flow)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/10258aa83c7c603456d7/test_coverage)](https://codeclimate.com/github/MartinNuc/ng2-flow/test_coverage)
+
 The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
 ## Roadmap
@@ -16,7 +19,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 - ✅ display uploaded image
 - ✅ tests
 - ✅ upload right after selecting file
-- ⏱ run tests using TravisCI
+- ✅ run tests using TravisCI
 - ⏱ demo using Stackblitz
 
 ## Install
@@ -40,41 +43,41 @@ export class AppModule
 
 1. First you need to initialize ngx-flow directive and export it as for example `flow` variable:
 
-    ```html
-    <ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload'}"></ng-container>
-    ```
+   ```html
+   <ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload'}"></ng-container>
+   ```
 
 1. Now you can use either directive `flowButton` for select file dialog:
 
-    ```html
-    <input type="file"
-          flowButton
-          [flow]="flow.flowJs"
-          [flowAttributes]="{accept: 'image/*'}">
-    ```
+   ```html
+   <input type="file"
+         flowButton
+         [flow]="flow.flowJs"
+         [flowAttributes]="{accept: 'image/*'}">
+   ```
 
-    Or `flowDrop` for drag&drop feature:
+   Or `flowDrop` for drag&drop feature:
 
-    ```html
-    <div class="drop-area"
-        flowDrop
-        [flow]="flow.flowJs">
-    </div>
-    ```
+   ```html
+   <div class="drop-area"
+       flowDrop
+       [flow]="flow.flowJs">
+   </div>
+   ```
 
-    For both you have to pass `[flow]=flow.flowJs` where `flow` is template variable exported in step 1.
+   For both you have to pass `[flow]=flow.flowJs` where `flow` is template variable exported in step 1.
 
 1. You can than subscribe to observable of transfers:
 
-    ```html
-    <div *ngFor="let transfer of (flow.transfers$ | async).transfers">
-    ```
+   ```html
+   <div *ngFor="let transfer of (flow.transfers$ | async).transfers">
+   ```
 
 1. After adding files you can begin upload using `upload()` method:
 
-    ```html
-    <button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
-    ```
+   ```html
+   <button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
+   ```
 
 ### How does `transfers$` data look like?
 
@@ -161,7 +164,6 @@ Use `trackBy` for `ngFor`:
 
 ```typescript
 export class AppComponent {
-
   trackTransfer(transfer: Transfer) {
     return transfer.id;
   }
@@ -200,11 +202,10 @@ Use directive `flowSrc`:
 
 ### How to trigger upload right after picking the file?
 
-Subscribe to `events$`. NgxFlow listens for these events: `filesSubmitted`, `fileRemoved`, `fileRetry`, `fileProgress`, `fileSuccess`, `fileError` of flow.js. Event `fileSubmitted` is fired when user drops or selects  a file.
+Subscribe to `events$`. NgxFlow listens for these events: `filesSubmitted`, `fileRemoved`, `fileRetry`, `fileProgress`, `fileSuccess`, `fileError` of flow.js. Event `fileSubmitted` is fired when user drops or selects a file.
 
 ```typescript
 export class AppComponent implements AfterViewInit, OnDestroy {
-
   @ViewChild('flow')
   flow: FlowDirective;
 
