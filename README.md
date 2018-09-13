@@ -1,6 +1,6 @@
 # NgxFlow
 
-[![Build Status](https://travis-ci.com/MartinNuc/ng2-flow.svg?branch=master)](https://travis-ci.com/MartinNuc/ng2-flow)
+[![Build Status](https://travis-ci.com/flowjs/ngx-flow.svg?branch=master)](https://travis-ci.com/flowjs/ngx-flow)
 
 The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
