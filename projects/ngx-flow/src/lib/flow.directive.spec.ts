@@ -6,6 +6,7 @@ import { FlowDirective } from './flow.directive';
 import { FileSuccess } from './flow/flow-events';
 import { FlowFile } from './flow/flow-file';
 import { FlowOptions } from './flow/flow-options';
+import { trasnferMockFactory } from './helpers/tests/file-mock';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`
@@ -110,12 +111,8 @@ describe('Directive: Flow integration tests', () => {
         done();
       });
 
-    const fileMock = {
-      flowFile: {
-        pause: jasmine.createSpy()
-      }
-    };
-    component.flow.pauseFile(fileMock as any);
+    const transferMock = trasnferMockFactory();
+    component.flow.pauseFile(transferMock);
   });
 
   it('should trigger flowJs upload on upload', () => {
@@ -134,42 +131,30 @@ describe('Directive: Flow integration tests', () => {
 
   it('should remove the file', () => {
     fixture.detectChanges();
-    const fileMock = {
-      flowFile: {
-        cancel: jasmine.createSpy()
-      }
-    };
-    component.flow.cancelFile(fileMock as any);
+    const fileMock = trasnferMockFactory();
+    component.flow.cancelFile(fileMock);
     expect(fileMock.flowFile.cancel).toHaveBeenCalled();
   });
 
   it('should pause file and emit event', done => {
     fixture.detectChanges();
-    const fileMock = {
-      flowFile: {
-        pause: jasmine.createSpy()
-      }
-    };
+    const fileMock = trasnferMockFactory();
     component.flow.pauseOrResumeEvent$.pipe(first()).subscribe(() => {
       done();
     });
 
-    component.flow.pauseFile(fileMock as any);
+    component.flow.pauseFile(fileMock);
     expect(fileMock.flowFile.pause).toHaveBeenCalled();
   });
 
   it('should resume file and emit event', done => {
     fixture.detectChanges();
-    const fileMock = {
-      flowFile: {
-        resume: jasmine.createSpy()
-      }
-    };
+    const fileMock = trasnferMockFactory();
     component.flow.pauseOrResumeEvent$.pipe(first()).subscribe(() => {
       done();
     });
 
-    component.flow.resumeFile(fileMock as any);
+    component.flow.resumeFile(fileMock);
     expect(fileMock.flowFile.resume).toHaveBeenCalled();
   });
 
