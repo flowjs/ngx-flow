@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build ngx-flow --prod",
+    "build": "ng build ngx-flow --prod && cp {README.md,LICENSE} ./dist/ngx-flow/",
     "test": "ng test ngx-flow",
     "test:ci": "ng test ngx-flow --watch=false --browsers ChromeHeadless --code-coverage",
     "server": "node server/app.js",
