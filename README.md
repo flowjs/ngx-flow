@@ -32,7 +32,7 @@ You can also find example source code in the `src` folder.
 
 ## Install
 
-`npm install @flowjs/flow.js ngx-flow`
+`npm install @flowjs/flow.js @flowjs/ngx-flow`
 
 Import in your module:
 

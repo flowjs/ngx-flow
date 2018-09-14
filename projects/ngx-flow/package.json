@@ -1,6 +1,6 @@
 {
   "name": "ngx-flow",
-  "version": "0.1.3",
+  "version": "0.3.0",
   "author": {
     "name": "Martin Nuc",
     "email": "martin@nuc.cz"
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MartinNuc/ng2-flow"
+    "url": "https://github.com/flowjs/ngx-flow"
   },
   "peerDependencies": {
     "@angular/common": "^6.0.0-rc.0 || ^6.0.0",
