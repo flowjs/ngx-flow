@@ -1,6 +1,6 @@
 {
-  "name": "ngx-flow",
-  "version": "0.3.0",
+  "name": "@flowjs/ngx-flow",
+  "version": "0.3.1",
   "author": {
     "name": "Martin Nuc",
     "email": "martin@nuc.cz"
