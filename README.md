@@ -37,7 +37,7 @@ You can also find example source code in the `src` folder.
 Import in your module:
 
 ```typescript
-import { NgxFlowModule } from 'ngx-flow';
+import { NgxFlowModule } from '@flowjs/ngx-flow';
 
 @NgModule({
   imports: [ NgxFlowModule ]
