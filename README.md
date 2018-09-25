@@ -29,6 +29,7 @@ You can also find example source code in the `src` folder.
 - ✅ upload right after selecting file
 - ✅ run tests using TravisCI
 - ✅ demo using Stackblitz
+- ⏱ support for server side rendering
 
 ## Install
 
