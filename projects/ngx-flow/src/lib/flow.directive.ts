@@ -1,4 +1,4 @@
-import { Directive, Inject, Input } from '@angular/core';
+import { Directive, Inject, Input, PLATFORM_ID } from '@angular/core';
 import { fromEvent, merge, Observable, ReplaySubject, Subject } from 'rxjs';
 import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
@@ -18,6 +18,7 @@ import { FlowOptions } from './flow/flow-options';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
 import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
+import { isPlatformBrowser } from '@angular/common';
 
 interface FlowChangeEvent<T extends FlowEvent | void> {
   type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
@@ -33,8 +34,10 @@ type NgxFlowChangeEvent = 'pauseOrResume' | 'newFlowJsInstance';
 export class FlowDirective {
   @Input()
   set flowConfig(options: FlowOptions) {
-    this.flowJs = new this.flowConstructor(options);
-    this.flow$.next(this.flowJs);
+    if (isPlatformBrowser(this.platform)) {
+      this.flowJs = new this.flowConstructor(options);
+      this.flow$.next(this.flowJs);
+    }
   }
 
   flowJs: Flow;
@@ -59,7 +62,10 @@ export class FlowDirective {
     map(state => state.transfers.some(file => !file.success), startWith(false))
   );
 
-  constructor(@Inject(FlowInjectionToken) protected flowConstructor: FlowConstructor) {}
+  constructor(
+    @Inject(FlowInjectionToken) protected flowConstructor: FlowConstructor,
+    @Inject(PLATFORM_ID) protected platform: any
+  ) {}
 
   private flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
     const events = [
