@@ -4,7 +4,6 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/test_coverage)](https://codeclimate.com/github/flowjs/ngx-flow/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/maintainability)](https://codeclimate.com/github/flowjs/ngx-flow/maintainability)
 
-
 The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
 ## Demo
@@ -29,7 +28,7 @@ You can also find example source code in the `src` folder.
 - ✅ upload right after selecting file
 - ✅ run tests using TravisCI
 - ✅ demo using Stackblitz
-- ⏱ support for server side rendering
+- ✅ support for server side rendering
 
 ## Install
 
@@ -232,4 +231,23 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.autoUploadSubscription.unsubscribe();
   }
 }
+```
+
+### Running with server side rendering (Angular Universal)
+
+For some reason when running app using SSR you will get error `ERROR TypeError: this.flowConstructor is not a constructor`. To solve this you have to provide Flow instance in your module:
+
+```typescript
+import { FlowInjectionToken } from '@flowjs/ngx-flow';
+import Flow from '@flowjs/flow.js';
+
+@NgModule({
+  providers: [
+    {
+      provide: FlowInjectionToken,
+      useValue: Flow
+    }
+  ]
+})
+export class AppModule {}
 ```

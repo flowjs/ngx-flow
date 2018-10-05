@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, PLATFORM_ID } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { first, skip } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
@@ -229,5 +229,33 @@ describe('Directive: Flow integration tests', () => {
       null
     ];
     (component.flow.flowJs as any).flowJsEventEmitters['fileSuccess'](fileSuccessEvent);
+  });
+});
+
+describe('Directive: Flow SSR tests', () => {
+  let component: TestComponent;
+  let fixture: ComponentFixture<TestComponent>;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [TestComponent, FlowDirective],
+      providers: [
+        {
+          provide: FlowInjectionToken,
+          useValue: FlowMock
+        },
+        {
+          provide: PLATFORM_ID,
+          useValue: 'server'
+        }
+      ]
+    });
+    fixture = TestBed.createComponent(TestComponent);
+    component = fixture.componentInstance;
+
+    it('should not initialize flowjs when running on the server', () => {
+      fixture.detectChanges();
+      expect(component.flow).toBeUndefined();
+    });
   });
 });
