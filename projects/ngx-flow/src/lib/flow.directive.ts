@@ -20,7 +20,7 @@ import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
 import { isPlatformBrowser } from '@angular/common';
 
-interface FlowChangeEvent<T extends FlowEvent | void> {
+export interface FlowChangeEvent<T extends FlowEvent | void> {
   type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
   event: T;
 }
