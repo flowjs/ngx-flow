@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.com/flowjs/ngx-flow.svg?branch=master)](https://travis-ci.com/flowjs/ngx-flow)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/test_coverage)](https://codeclimate.com/github/flowjs/ngx-flow/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/maintainability)](https://codeclimate.com/github/flowjs/ngx-flow/maintainability)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
