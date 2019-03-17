@@ -37,13 +37,22 @@ You can also find example source code in the `src` folder.
 Import in your module:
 
 ```typescript
-import { NgxFlowModule } from '@flowjs/ngx-flow';
+import { NgxFlowModule, FlowInjectionToken } from '@flowjs/ngx-flow';
+import Flow from '@flowjs/flow.js';
 
 @NgModule({
-  imports: [ NgxFlowModule ]
+  imports: [NgxFlowModule],
+  providers: [
+    {
+      provide: FlowInjectionToken,
+      useValue: Flow
+    }
+  ]
 })
 export class AppModule
 ```
+
+We use dependecy injection to provide flow.js library.
 
 ## How to use
 
@@ -231,23 +240,4 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.autoUploadSubscription.unsubscribe();
   }
 }
-```
-
-### Running with server side rendering (Angular Universal)
-
-For some reason when running app using SSR you will get error `ERROR TypeError: this.flowConstructor is not a constructor`. To solve this you have to provide Flow instance in your module:
-
-```typescript
-import { FlowInjectionToken } from '@flowjs/ngx-flow';
-import Flow from '@flowjs/flow.js';
-
-@NgModule({
-  providers: [
-    {
-      provide: FlowInjectionToken,
-      useValue: Flow
-    }
-  ]
-})
-export class AppModule {}
 ```
