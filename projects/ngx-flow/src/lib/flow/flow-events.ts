@@ -1,33 +1,26 @@
 import { FlowFile } from './flow-file';
 import { FlowChunk } from './flow-chunk';
 
-export type EventName =
-  | 'fileSuccess'
-  | 'fileProgress'
-  | 'fileAdded'
-  | 'filesAdded'
-  | 'filesSubmitted'
-  | 'fileRemoved'
-  | 'fileRetry'
-  | 'fileError'
-  | 'uploadStart'
-  | 'complete'
-  | 'progress'
-  | 'error';
+interface FlowEventMap {
+  fileSuccess: FileSuccess;
+  fileProgress: FileProgress;
+  fileAdded: FileAdded;
+  filesAdded: FilesAdded;
+  filesSubmitted: FilesSubmitted;
+  fileRemoved: FileRemoved;
+  fileRetry: FileRetry;
+  fileError: FileError;
+  uploadStart: UploadStart;
+  complete: Complete;
+  progress: Progress;
+  error: Error;
+}
 
-export type FlowEvent =
-  | FileSuccess
-  | FileProgress
-  | FileAdded
-  | FilesAdded
-  | FilesSubmitted
-  | FileRemoved
-  | FileRetry
-  | FileError
-  | UploadStart
-  | Complete
-  | Progress
-  | Error;
+export type EventName = keyof FlowEventMap;
+export type FlowEvent = FlowEventMap[keyof FlowEventMap];
+
+export type FlowEventFromEventName<T extends EventName> = FlowEventMap[T];
+export type FlowEventTypeFromFlowEvent<T extends FlowEvent> = T extends FlowEventFromEventName<infer U> ? U : never;
 
 export type FileSuccess = [FlowFile, string, FlowChunk];
 export type FileProgress = [FlowFile, FlowChunk];

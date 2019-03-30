@@ -3,16 +3,7 @@ import { fromEvent, merge, Observable, ReplaySubject, Subject } from 'rxjs';
 import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
 import { Flow, FlowConstructor } from './flow/flow';
-import {
-  EventName,
-  FileError,
-  FileProgress,
-  FileRemoved,
-  FileRetry,
-  FilesSubmitted,
-  FileSuccess,
-  FlowEvent
-} from './flow/flow-events';
+import { EventName, FlowEvent, FlowEventFromEventName } from './flow/flow-events';
 import { FlowFile } from './flow/flow-file';
 import { FlowOptions } from './flow/flow-options';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
@@ -20,12 +11,14 @@ import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
 import { isPlatformBrowser } from '@angular/common';
 
-export interface FlowChangeEvent<T extends FlowEvent | void> {
-  type: T extends FlowEvent ? EventName : NgxFlowChangeEvent;
-  event: T;
+export interface FlowChangeEvent<T extends EventName> {
+  type: T;
+  event: FlowEventFromEventName<T>;
 }
 
-type NgxFlowChangeEvent = 'pauseOrResume' | 'newFlowJsInstance';
+interface NgxFlowEvent {
+  type: 'pauseOrResume' | 'newFlowJsInstance';
+}
 
 @Directive({
   selector: '[flowConfig]',
@@ -67,25 +60,25 @@ export class FlowDirective {
     @Inject(PLATFORM_ID) protected platform: any
   ) {}
 
-  private flowEvents(flow: Flow): Observable<FlowChangeEvent<FlowEvent>> {
+  private flowEvents(flow: Flow): Observable<FlowChangeEvent<EventName>> {
     const events = [
-      this.listenForEvent<FilesSubmitted>(flow, 'filesSubmitted'),
-      this.listenForEvent<FileRemoved>(flow, 'fileRemoved'),
-      this.listenForEvent<FileRetry>(flow, 'fileRetry'),
-      this.listenForEvent<FileProgress>(flow, 'fileProgress'),
-      this.listenForEvent<FileSuccess>(flow, 'fileSuccess'),
-      this.listenForEvent<FileError>(flow, 'fileError')
+      this.listenForEvent(flow, 'filesSubmitted'),
+      this.listenForEvent(flow, 'fileRemoved'),
+      this.listenForEvent(flow, 'fileRetry'),
+      this.listenForEvent(flow, 'fileProgress'),
+      this.listenForEvent(flow, 'fileSuccess'),
+      this.listenForEvent(flow, 'fileError')
     ];
     return merge(...events);
   }
 
-  private ngxFlowEvents(): Observable<FlowChangeEvent<void>> {
+  private ngxFlowEvents(): Observable<NgxFlowEvent> {
     const pauseOrResumeEvent$ = this.pauseOrResumeEvent$.pipe(
       map(
         _ =>
           ({
             type: 'pauseOrResume'
-          } as FlowChangeEvent<void>)
+          } as NgxFlowEvent)
       )
     );
     const newFlowInstanceEvent$ = this.flow$.pipe(
@@ -93,7 +86,7 @@ export class FlowDirective {
         _ =>
           ({
             type: 'newFlowJsInstance'
-          } as FlowChangeEvent<void>)
+          } as NgxFlowEvent)
       )
     );
     const events = [pauseOrResumeEvent$, newFlowInstanceEvent$];
@@ -122,15 +115,15 @@ export class FlowDirective {
     this.pauseOrResumeEvent$.next();
   }
 
-  protected listenForEvent<T extends FlowEvent>(flow: Flow, eventName: EventName): Observable<FlowChangeEvent<T>> {
-    return fromEvent<T>(flow, eventName).pipe(
-      map(
-        args =>
-          ({
-            type: eventName,
-            event: args
-          } as FlowChangeEvent<T>)
-      )
+  protected listenForEvent<T extends EventName>(
+    flow: Flow,
+    eventName: T
+  ): Observable<{ type: T; event: FlowEventFromEventName<T> }> {
+    return fromEvent<FlowEventFromEventName<T>>(flow, eventName).pipe(
+      map(args => ({
+        type: eventName,
+        event: args
+      }))
     );
   }
 }

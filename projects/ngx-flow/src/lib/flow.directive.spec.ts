@@ -2,7 +2,7 @@ import { Component, ViewChild, PLATFORM_ID } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { first, skip } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
-import { FlowDirective } from './flow.directive';
+import { FlowDirective, FlowChangeEvent } from './flow.directive';
 import { FileSuccess } from './flow/flow-events';
 import { FlowFile } from './flow/flow-file';
 import { FlowOptions } from './flow/flow-options';
@@ -216,7 +216,7 @@ describe('Directive: Flow integration tests', () => {
         skip(1), // skip new flowjs instance event
         first()
       )
-      .subscribe(event => {
+      .subscribe((event: FlowChangeEvent<'fileSuccess'>) => {
         expect(event.event[0].name).toBe('file.txt');
         expect(event.type).toBe('fileSuccess');
         done();
