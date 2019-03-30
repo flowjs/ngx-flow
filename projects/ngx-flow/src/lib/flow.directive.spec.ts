@@ -3,7 +3,7 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { first, skip } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
 import { FlowDirective, FlowChangeEvent } from './flow.directive';
-import { FileSuccess } from './flow/flow-events';
+import { FileSuccessCallbackArguments } from './flow/flow-events';
 import { FlowFile } from './flow/flow-file';
 import { FlowOptions } from './flow/flow-options';
 import { trasnferMockFactory } from './helpers/tests/file-mock';
@@ -221,7 +221,7 @@ describe('Directive: Flow integration tests', () => {
         expect(event.type).toBe('fileSuccess');
         done();
       });
-    const fileSuccessEvent: FileSuccess = [
+    const fileSuccessEvent: FileSuccessCallbackArguments = [
       {
         name: 'file.txt'
       } as FlowFile,

@@ -1,5 +1,6 @@
 import { FlowOptions } from './flow-options';
 import { FlowFile } from './flow-file';
+import { EventName } from './flow-events';
 
 export interface FlowConstructor {
   new (flowOptions: FlowOptions): Flow;
@@ -19,8 +20,8 @@ export interface Flow {
   ): void;
   assignDrop(node: HTMLElement | HTMLElement[]): void;
   unAssignDrop(node: HTMLElement | HTMLElement[]): void;
-  on(event: any, callback: Function): void;
-  off(event?: any, callback?: Function): void;
+  on(event: EventName, callback: Function): void;
+  off(event?: EventName, callback?: Function): void;
   upload(): void;
   pause(): void;
   resume(): void;
