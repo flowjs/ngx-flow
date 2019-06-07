@@ -10,7 +10,7 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('flow')
+  @ViewChild('flow', { static: false })
   flow: FlowDirective;
 
   autoUploadSubscription: Subscription;

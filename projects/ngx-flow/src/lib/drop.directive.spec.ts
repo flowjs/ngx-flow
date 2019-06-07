@@ -9,7 +9,7 @@ import { By } from '@angular/platform-browser';
 class TestComponent {
   flowJs: any;
 
-  @ViewChild('flowDrop')
+  @ViewChild('flowDrop', { static: false })
   flowDrop: DropDirective;
 }
 describe('Directive: Drop', () => {

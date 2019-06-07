@@ -12,7 +12,7 @@ import { trasnferMockFactory } from './helpers/tests/file-mock';
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`
 })
 class TestComponent {
-  @ViewChild('flow')
+  @ViewChild('flow', { static: true })
   flow: FlowDirective;
 
   config = { target: 'http://localhost:3000/upload' };
