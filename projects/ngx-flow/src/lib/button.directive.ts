@@ -1,5 +1,4 @@
 import { Directive, ElementRef, Input } from '@angular/core';
-import { Flow } from './flow/flow';
 
 @Directive({
   selector: '[flowButton]'
@@ -19,9 +18,9 @@ export class ButtonDirective {
     this.setup();
   }
 
-  protected _flow: Flow = null;
+  protected _flow: flowjs.Flow = null;
   @Input()
-  set flow(flow: Flow) {
+  set flow(flow: flowjs.Flow) {
     this._flow = flow;
     this.setup();
   }

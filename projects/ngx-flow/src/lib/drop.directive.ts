@@ -1,15 +1,14 @@
 import { Directive, Input, ElementRef, Renderer2, OnInit } from '@angular/core';
-import { Flow } from './flow/flow';
 
 @Directive({
   selector: '[flowDrop]',
   exportAs: 'flowDrop'
 })
 export class DropDirective implements OnInit {
-  protected flowJs: Flow;
+  protected flowJs: flowjs.Flow;
 
   @Input()
-  set flow(flow: Flow) {
+  set flow(flow: flowjs.Flow) {
     this.flowJs = flow;
     if (!flow) {
       return;

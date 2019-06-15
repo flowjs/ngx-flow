@@ -1,7 +1,6 @@
-import { FlowFile } from '../flow/flow-file';
 import { Transfer } from '../transfer';
 
-export function flowFile2Transfer(flowFile: FlowFile): Transfer {
+export function flowFile2Transfer(flowFile: flowjs.FlowFile): Transfer {
   return {
     id: flowFile.uniqueIdentifier,
     name: flowFile.name,

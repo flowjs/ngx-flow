@@ -1,9 +1,7 @@
-import { FlowFile } from './flow/flow-file';
-
 export interface Transfer {
   id: string;
   name: string;
-  flowFile: FlowFile;
+  flowFile: flowjs.FlowFile;
   progress: number;
   error: boolean;
   paused: boolean;
