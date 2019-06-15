@@ -32,4 +32,9 @@ img {
   min-height: 80px;
   border: 1px solid darkblue;
   background: lightskyblue;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+  max-width: 300px;
 }

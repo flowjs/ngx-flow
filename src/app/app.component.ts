@@ -1,4 +1,11 @@
-import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectorRef
+} from '@angular/core';
 import { Transfer } from 'projects/ngx-flow/src/public_api';
 import { FlowDirective } from 'projects/ngx-flow/src/lib/flow.directive';
 import { Subscription } from 'rxjs';
@@ -15,10 +22,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   autoUploadSubscription: Subscription;
 
+  constructor(private cd: ChangeDetectorRef) {}
+
   ngAfterViewInit() {
     this.autoUploadSubscription = this.flow.events$.subscribe(event => {
-      if (event.type === 'filesSubmitted') {
-        this.flow.upload();
+      switch (event.type) {
+        case 'filesSubmitted':
+          return this.flow.upload();
+        case 'newFlowJsInstance':
+          this.cd.detectChanges();
       }
     });
   }

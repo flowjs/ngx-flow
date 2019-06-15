@@ -1,6 +1,16 @@
 <h1>ngx-flow example</h1>
+<p>
+  Files are not uploaded anywhere in this example.
+</p>
 
-<p>Is flowjs supported by the browser? {{flow.flowJs?.support}}</p>
+<p *ngIf="flow.flowJs?.support; else notSupported">
+  ✅ FlowJS is supported by your browser
+</p>
+<ng-template #notSupported>
+  <p>
+    🛑 FlowJS is NOT supported by your browser
+  </p>
+</ng-template>
 
 <ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload'}"></ng-container>
 <input type="file"
@@ -11,6 +21,7 @@
 <div class="drop-area"
      flowDrop
      [flow]="flow.flowJs">
+     Drop a file here
 </div>
 
 <div class="transfers">
