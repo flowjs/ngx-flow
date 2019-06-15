@@ -14,8 +14,8 @@
     "typeRoots": ["node_modules/@types"],
     "lib": ["es2017", "dom"],
     "paths": {
-      "ngx-flow": ["dist/ngx-flow"],
-      "ngx-flow/*": ["dist/ngx-flow/*"]
+      "@flowjs/ngx-flow": ["dist/ngx-flow"],
+      "@flowjs/ngx-flow/*": ["dist/ngx-flow/*"]
     }
   }
 }
