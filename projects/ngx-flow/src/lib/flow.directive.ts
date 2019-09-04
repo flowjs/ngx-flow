@@ -59,12 +59,17 @@ export class FlowDirective {
 
   private flowEvents(flow: flowjs.Flow): Observable<FlowChangeEvent<flowjs.EventName>> {
     const events = [
+      this.listenForEvent(flow, 'fileSuccess'),
+      this.listenForEvent(flow, 'fileProgress'),
+      this.listenForEvent(flow, 'fileAdded'),
+      this.listenForEvent(flow, 'filesAdded'),
       this.listenForEvent(flow, 'filesSubmitted'),
       this.listenForEvent(flow, 'fileRemoved'),
       this.listenForEvent(flow, 'fileRetry'),
-      this.listenForEvent(flow, 'fileProgress'),
-      this.listenForEvent(flow, 'fileSuccess'),
-      this.listenForEvent(flow, 'fileError')
+      this.listenForEvent(flow, 'fileError'),
+      this.listenForEvent(flow, 'uploadStart'),
+      this.listenForEvent(flow, 'complete'),
+      this.listenForEvent(flow, 'progress')
     ];
     return merge(...events);
   }
