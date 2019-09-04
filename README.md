@@ -242,3 +242,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 }
 ```
+
+### Development
+
+`npm run build` - builds the library into dist folder
+
+After that you can publish to npm repository from `dist` folder:
+
+```
+cd dist/ngx-flow
+npm publish
+```
