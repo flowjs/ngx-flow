@@ -37,7 +37,7 @@
     "@angular/cli": "~8.0.2",
     "@angular/compiler-cli": "^8.0.0",
     "@angular/language-service": "^8.0.0",
-    "@types/flowjs": "2.13.1",
+    "@types/flowjs": "2.13.3",
     "@types/jasmine": "~2.8.6",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
