@@ -1,5 +1,5 @@
 {
-  "name": "@flowjs/ngx-flow",
+  "name": "ngx-flow-demo",
   "version": "0.0.0",
   "files": [
     "dist/ngx-flow"
