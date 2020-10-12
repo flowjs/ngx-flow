@@ -7,6 +7,9 @@ import { FlowDirective } from './flow.directive';
 import { SrcDirective } from './src.directive';
 
 const directives = [ButtonDirective, SrcDirective, DropDirective, FlowDirective];
+export function flowFactory() {
+  return Flow;
+}
 
 @NgModule({
   imports: [],
@@ -14,7 +17,7 @@ const directives = [ButtonDirective, SrcDirective, DropDirective, FlowDirective]
   providers: [
     {
       provide: FlowInjectionToken,
-      useValue: Flow
+      useFactory: flowFactory
     }
   ],
   exports: directives
