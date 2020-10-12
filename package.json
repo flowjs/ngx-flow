@@ -1,19 +1,17 @@
 {
   "name": "ngx-flow-demo",
   "version": "0.0.0",
-  "files": [
-    "dist/ngx-flow"
-  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build ngx-flow --prod",
+    "build": "ng build ngx-flow --prod && cp {README.md,LICENSE} ./dist/ngx-flow/",
     "test": "ng test ngx-flow",
     "test:ci": "ng test ngx-flow --watch=false --browsers ChromeHeadless --code-coverage",
     "server": "node server/app.js",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
+  "private": true,
   "husky": {
     "hooks": {
       "pre-commit": "pretty-quick --staged"
