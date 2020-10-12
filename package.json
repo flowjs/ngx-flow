@@ -12,8 +12,7 @@
     "test:ci": "ng test ngx-flow --watch=false --browsers ChromeHeadless --code-coverage",
     "server": "node server/app.js",
     "lint": "ng lint",
-    "e2e": "ng e2e",
-    "prepare": "npm run build && mv dist/ngx-flow ./ -f"
+    "e2e": "ng e2e"
   },
   "husky": {
     "hooks": {
