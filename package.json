@@ -13,7 +13,7 @@
     "server": "node server/app.js",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "prepare": "npm run build"
+    "prepare": "npm run build && mv dist/ngx-flow ./ -f"
   },
   "husky": {
     "hooks": {
