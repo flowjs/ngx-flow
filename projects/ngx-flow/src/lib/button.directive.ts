@@ -1,7 +1,7 @@
 import { Directive, ElementRef, Input } from '@angular/core';
 
 @Directive({
-  selector: '[flowButton]'
+  selector: '[flowButton]',
 })
 export class ButtonDirective {
   protected _directoryOnly = false;
@@ -11,14 +11,14 @@ export class ButtonDirective {
     this.setup();
   }
 
-  protected _attributes: object;
+  protected _attributes?: object;
   @Input()
   set flowAttributes(attributes: object) {
     this._attributes = attributes;
     this.setup();
   }
 
-  protected _flow: flowjs.Flow = null;
+  protected _flow?: flowjs.Flow;
   @Input()
   set flow(flow: flowjs.Flow) {
     this._flow = flow;
@@ -29,7 +29,12 @@ export class ButtonDirective {
     if (!this._flow) {
       return;
     }
-    this._flow.assignBrowse(this.el.nativeElement, this._directoryOnly, this._flow.opts.singleFile, this._attributes);
+    this._flow.assignBrowse(
+      this.el.nativeElement,
+      this._directoryOnly,
+      this._flow.opts.singleFile,
+      this._attributes
+    );
   }
 
   constructor(protected el: ElementRef) {}

@@ -1,6 +1,6 @@
 export class FlowMock {
   constructor(public opts: Partial<flowjs.FlowOptions>) {}
-  flowJsEventEmitters = {};
+  flowJsEventEmitters: Record<string, Function> = {};
   addEventListener = jasmine.createSpy().and.callFake((eventName: string, cb: () => void) => {
     this.flowJsEventEmitters[eventName] = cb;
   });

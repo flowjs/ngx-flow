@@ -3,7 +3,7 @@ export function flowFileMockFactory(filename: string, overrides?: Partial<flowjs
     flowObj: null as any,
     file: {
       name: filename,
-      lastModified: 0
+      lastModified: 0,
     } as File,
     name: filename,
     relativePath: filename,
@@ -13,7 +13,7 @@ export function flowFileMockFactory(filename: string, overrides?: Partial<flowjs
     currentSpeed: 0,
     chunks: [],
     paused: false,
-    error: null,
+    error: false,
     progress: jasmine.createSpy(),
     pause: jasmine.createSpy(),
     resume: jasmine.createSpy(),
@@ -25,7 +25,7 @@ export function flowFileMockFactory(filename: string, overrides?: Partial<flowjs
     sizeUploaded: jasmine.createSpy(),
     timeRemaining: jasmine.createSpy(),
     getExtension: jasmine.createSpy(),
-    getType: jasmine.createSpy()
+    getType: jasmine.createSpy(),
   } as flowjs.FlowFile;
   return Object.assign({}, mocks, overrides);
 }
