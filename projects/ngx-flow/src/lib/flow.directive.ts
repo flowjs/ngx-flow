@@ -7,19 +7,20 @@ import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
 import { isPlatformBrowser } from '@angular/common';
 import { FlowConstructor } from './flow-constructor';
+import { JQueryStyleEventEmitter } from 'rxjs/internal/observable/fromEvent';
 
 export interface FlowChangeEvent<T extends flowjs.EventName> {
   type: T;
   event: flowjs.FlowEventFromEventName<T>;
 }
 
-interface NgxFlowEvent {
+export interface NgxFlowEvent {
   type: 'pauseOrResume' | 'newFlowJsInstance';
 }
 
 @Directive({
   selector: '[flowConfig]',
-  exportAs: 'flow'
+  exportAs: 'flow',
 })
 export class FlowDirective {
   @Input()
@@ -30,26 +31,31 @@ export class FlowDirective {
     }
   }
 
-  flowJs: flowjs.Flow;
+  flowJs!: flowjs.Flow;
 
   protected flow$ = new ReplaySubject<flowjs.Flow>(1);
 
   pauseOrResumeEvent$ = new Subject<void>();
 
-  events$ = this.flow$.pipe(switchMap(flow => merge(this.flowEvents(flow), this.ngxFlowEvents())));
+  events$ = this.flow$.pipe(
+    switchMap((flow) => merge(this.flowEvents(flow), this.ngxFlowEvents()))
+  );
 
   transfers$: Observable<UploadState> = this.events$.pipe(
-    map(_ => this.flowJs.files),
+    map((_) => this.flowJs.files),
     map((files: flowjs.FlowFile[] = []) => ({
-      transfers: files.map(flowFile => flowFile2Transfer(flowFile)),
+      transfers: files.map((flowFile) => flowFile2Transfer(flowFile)),
       flow: this.flowJs,
-      totalProgress: this.flowJs.progress()
+      totalProgress: this.flowJs.progress(),
     })),
     shareReplay(1)
   );
 
   somethingToUpload$ = this.transfers$.pipe(
-    map(state => state.transfers.some(file => !file.success), startWith(false))
+    map(
+      (state) => state.transfers.some((file) => !file.success),
+      startWith(false)
+    )
   );
 
   constructor(
@@ -57,7 +63,9 @@ export class FlowDirective {
     @Inject(PLATFORM_ID) protected platform: any
   ) {}
 
-  private flowEvents(flow: flowjs.Flow): Observable<FlowChangeEvent<flowjs.EventName>> {
+  private flowEvents(
+    flow: flowjs.Flow
+  ): Observable<FlowChangeEvent<flowjs.EventName>> {
     const events = [
       this.listenForEvent(flow, 'fileSuccess'),
       this.listenForEvent(flow, 'fileProgress'),
@@ -69,7 +77,7 @@ export class FlowDirective {
       this.listenForEvent(flow, 'fileError'),
       this.listenForEvent(flow, 'uploadStart'),
       this.listenForEvent(flow, 'complete'),
-      this.listenForEvent(flow, 'progress')
+      this.listenForEvent(flow, 'progress'),
     ];
     return merge(...events);
   }
@@ -77,17 +85,17 @@ export class FlowDirective {
   private ngxFlowEvents(): Observable<NgxFlowEvent> {
     const pauseOrResumeEvent$ = this.pauseOrResumeEvent$.pipe(
       map(
-        _ =>
+        (_) =>
           ({
-            type: 'pauseOrResume'
+            type: 'pauseOrResume',
           } as NgxFlowEvent)
       )
     );
     const newFlowInstanceEvent$ = this.flow$.pipe(
       map(
-        _ =>
+        (_) =>
           ({
-            type: 'newFlowJsInstance'
+            type: 'newFlowJsInstance',
           } as NgxFlowEvent)
       )
     );
@@ -121,10 +129,14 @@ export class FlowDirective {
     flow: flowjs.Flow,
     eventName: T
   ): Observable<{ type: T; event: flowjs.FlowEventFromEventName<T> }> {
-    return fromEvent<flowjs.FlowEventFromEventName<T>>(flow, eventName).pipe(
-      map(args => ({
+    return fromEvent<flowjs.FlowEventFromEventName<T>>(
+      // ToDo: fix typings here:
+      flow as unknown as JQueryStyleEventEmitter,
+      eventName
+    ).pipe(
+      map((args) => ({
         type: eventName,
-        event: args
+        event: args,
       }))
     );
   }

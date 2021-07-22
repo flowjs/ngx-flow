@@ -1,6 +1,6 @@
 {
-  "name": "@flowjs/ngx-flow",
-  "version": "0.4.6",
+  "name": "ngx-flow",
+  "version": "0.5.0",
   "author": {
     "name": "Martin Nuc",
     "email": "martin@nuc.cz"
@@ -10,13 +10,15 @@
     "type": "git",
     "url": "https://github.com/flowjs/ngx-flow"
   },
-  "dependencies": {
-    "@types/flowjs": "2.13.3"
-  },
   "peerDependencies": {
-    "@angular/common": "^6.0.0 || ^7.0.0|| ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0",
-    "@angular/core": "^6.0.0 || ^7.0.0|| ^8.0.0|| ^9.0.0 || ^10.0.0 || ^11.0.0",
-    "@flowjs/flow.js": "^2.13.0",
-    "typescript": "^3.1 || ^4.0.0"
+    "@angular/common": "^12.1.0-",
+    "@angular/core": "^12.1.0-",
+    "@flowjs/flow.js": "^2.13.0"
+  },
+  "dependencies": {
+    "tslib": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/flowjs": "2.13.3"
   }
 }

@@ -1,12 +1,8 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/ngx-flow",
-  "deleteDestPath": false,
-  "whitelistedNonPeerDependencies": ["@types/flowjs"],
+  "allowedNonPeerDependencies": ["@types/flowjs"],
   "lib": {
-    "entryFile": "src/public_api.ts",
-    "umdModuleIds": {
-      "@flowjs/flow.js": "Flow"
-    }
+    "entryFile": "src/public-api.ts"
   }
 }

@@ -4,13 +4,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 @Component({
-  template: `<div flowDrop [flow]="flowJs" #flowDrop="flowDrop">`
+  template: `<div flowDrop [flow]="flowJs" #flowDrop="flowDrop"></div>`,
 })
 class TestComponent {
   flowJs: any;
 
   @ViewChild('flowDrop', { static: false })
-  flowDrop: DropDirective;
+  flowDrop!: DropDirective;
 }
 describe('Directive: Drop', () => {
   let component: TestComponent;
@@ -21,7 +21,7 @@ describe('Directive: Drop', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [TestComponent, DropDirective],
-      providers: [Renderer2]
+      providers: [Renderer2],
     });
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
@@ -31,28 +31,34 @@ describe('Directive: Drop', () => {
   it('should call assignDrop after setting up flow', () => {
     component.flowJs = {
       assignDrop: jasmine.createSpy(),
-      unAssignDrop: jasmine.createSpy()
+      unAssignDrop: jasmine.createSpy(),
     };
 
     expect(component.flowJs.assignDrop).toHaveBeenCalledTimes(0);
     fixture.detectChanges();
-    expect(component.flowJs.assignDrop).toHaveBeenCalledWith(dropAreElement.nativeElement);
+    expect(component.flowJs.assignDrop).toHaveBeenCalledWith(
+      dropAreElement.nativeElement
+    );
   });
 
   it('should call assignDrop after enable/disable', () => {
     component.flowJs = {
       assignDrop: jasmine.createSpy(),
-      unAssignDrop: jasmine.createSpy()
+      unAssignDrop: jasmine.createSpy(),
     };
     fixture.detectChanges();
 
     component.flowDrop.disable();
     fixture.detectChanges();
-    expect(component.flowJs.unAssignDrop).toHaveBeenCalledWith(dropAreElement.nativeElement);
+    expect(component.flowJs.unAssignDrop).toHaveBeenCalledWith(
+      dropAreElement.nativeElement
+    );
 
     component.flowDrop.enable();
     fixture.detectChanges();
-    expect(component.flowJs.assignDrop).toHaveBeenCalledWith(dropAreElement.nativeElement);
+    expect(component.flowJs.assignDrop).toHaveBeenCalledWith(
+      dropAreElement.nativeElement
+    );
   });
 
   it('should attach drop and dragover listeners to body', () => {
@@ -62,7 +68,7 @@ describe('Directive: Drop', () => {
     // cannot use toHaveBeenCalledWith: https://github.com/jasmine/jasmine/issues/228
     expect((renderer.listen as any).calls.allArgs()).toEqual([
       ['body', 'drop', jasmine.any(Function)],
-      ['body', 'dragover', jasmine.any(Function)]
+      ['body', 'dragover', jasmine.any(Function)],
     ]);
   });
 });
