@@ -27,7 +27,7 @@
 <div class="transfers">
   <div class="transfer"
        [ngClass]="{'transfer--error': transfer.error, 'transfer--success': transfer.success}"
-       *ngFor="let transfer of (flow.transfers$ | async).transfers; trackBy: trackTransfer">
+       *ngFor="let transfer of (flow.transfers$ | async)?.transfers; trackBy: trackByTransfer">
     <div class="name">name: {{transfer.name}}</div>
     <div>progress: {{transfer.progress | percent}}</div>
     <div>size: {{transfer.size | number: '1.0'}} bytes</div>
@@ -47,5 +47,5 @@
   </div>
 </div>
 <button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
-<button type="button" (click)="flow.cancel()" [disabled]="!(flow.transfers$ | async).transfers.length">Cancel all</button>
-Total progress: {{(flow.transfers$ | async).totalProgress | percent}}
+<button type="button" (click)="flow.cancel()" [disabled]="!(flow.transfers$ | async)?.transfers?.length">Cancel all</button>
+Total progress: {{(flow.transfers$ | async)?.totalProgress | percent}}

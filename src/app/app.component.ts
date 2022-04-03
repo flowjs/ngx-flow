@@ -4,7 +4,8 @@ import {
   ViewChild,
   AfterViewInit,
   OnDestroy,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  TrackByFunction
 } from '@angular/core';
 import { Transfer } from 'projects/ngx-flow/src/public_api';
 import { FlowDirective } from 'projects/ngx-flow/src/lib/flow.directive';
@@ -17,18 +18,17 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('flow', { static: false })
-  flow: FlowDirective;
+  @ViewChild('flow', { static: false }) flow: FlowDirective | undefined;
 
-  autoUploadSubscription: Subscription;
+  autoUploadSubscription: Subscription | undefined;
 
   constructor(private cd: ChangeDetectorRef) {}
 
   ngAfterViewInit() {
-    this.autoUploadSubscription = this.flow.events$.subscribe(event => {
+    this.autoUploadSubscription = this.flow?.events$.subscribe(event => {
       switch (event.type) {
         case 'filesSubmitted':
-          return this.flow.upload();
+          return this.flow?.upload();
         case 'newFlowJsInstance':
           this.cd.detectChanges();
       }
@@ -36,10 +36,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.autoUploadSubscription.unsubscribe();
+    this.autoUploadSubscription?.unsubscribe();
   }
 
-  trackTransfer(transfer: Transfer) {
+  trackByTransfer(index: number, transfer: Transfer) {
     return transfer.id;
   }
 }
