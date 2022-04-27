@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { NgxFlowModule, FlowInjectionToken } from '@flowjs/ngx-flow';
+import { NgxFlowModule, FlowInjectionToken } from 'ngx-flow';
 import Flow from '@flowjs/flow.js';
 
 @NgModule({
