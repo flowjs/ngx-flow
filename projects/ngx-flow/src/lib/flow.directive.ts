@@ -125,13 +125,12 @@ export class FlowDirective {
     this.pauseOrResumeEvent$.next();
   }
 
-  protected listenForEvent<T extends flowjs.EventName>(
+  protected listenForEvent<T extends flowjs.EventName, R extends flowjs.FlowEventFromEventName<T>>(
     flow: flowjs.Flow,
     eventName: T
-  ): Observable<{ type: T; event: flowjs.FlowEventFromEventName<T> }> {
-    return fromEvent<flowjs.FlowEventFromEventName<T>>(
-      // ToDo: fix typings here:
-      flow as unknown as JQueryStyleEventEmitter,
+  ): Observable<{ type: T; event: R }> {
+    return fromEvent<R>(
+      flow as JQueryStyleEventEmitter<any, R>,
       eventName
     ).pipe(
       map((args) => ({
