@@ -13,10 +13,7 @@
     "declaration": false,
     "downlevelIteration": true,
     "paths": {
-      "ngx-flow": [
-        "dist/ngx-flow/ngx-flow",
-        "dist/ngx-flow"
-      ]
+      "@flowjs/ngx-flow": ["dist/ngx-flow"]
     },
     "experimentalDecorators": true,
     "moduleResolution": "node",
