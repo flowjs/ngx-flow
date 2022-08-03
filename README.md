@@ -235,7 +235,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
 ### Development
 
-`npm run build` - builds the library into dist folder
+`npm run build:lib` - builds the library into dist folder
 
 After that you can publish to npm repository from `dist` folder:
 
