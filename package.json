@@ -22,23 +22,23 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "~14.0.0",
-    "@angular/common": "~14.0.0",
-    "@angular/compiler": "~14.0.0",
-    "@angular/core": "~14.0.0",
-    "@angular/forms": "~14.0.0",
-    "@angular/platform-browser": "~14.0.0",
-    "@angular/platform-browser-dynamic": "~14.0.0",
-    "@angular/router": "~14.0.0",
+    "@angular/animations": "~15.2.9",
+    "@angular/common": "~15.2.9",
+    "@angular/compiler": "~15.2.9",
+    "@angular/core": "~15.2.9",
+    "@angular/forms": "~15.2.9",
+    "@angular/platform-browser": "~15.2.9",
+    "@angular/platform-browser-dynamic": "~15.2.9",
+    "@angular/router": "~15.2.9",
     "@flowjs/flow.js": "^2.13.0",
     "rxjs": "^7.5.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~14.0.0",
-    "@angular/cli": "~14.0.0",
-    "@angular/compiler-cli": "~14.0.0",
+    "@angular-devkit/build-angular": "~15.2.9",
+    "@angular/cli": "~15.2.9",
+    "@angular/compiler-cli": "~15.2.9",
     "@types/flowjs": "2.13.3",
     "@types/jasmine": "~3.8.0",
     "@types/node": "^12.11.1",
@@ -48,7 +48,7 @@
     "karma-coverage": "~2.0.3",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "~1.7.0",
-    "ng-packagr": "~14.0.0",
-    "typescript": "~4.7.2"
+    "ng-packagr": "~15.2.2",
+    "typescript": "~4.9.5"
   }
 }
