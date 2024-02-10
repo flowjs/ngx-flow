@@ -11,8 +11,8 @@
     "url": "https://github.com/flowjs/ngx-flow"
   },
   "peerDependencies": {
-    "@angular/common": "^16.1.8",
-    "@angular/core": "^16.1.8",
+    "@angular/common": "^17.1.3",
+    "@angular/core": "^17.1.3",
     "@flowjs/flow.js": "^2.13.0"
   },
   "dependencies": {
