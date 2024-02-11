@@ -6,8 +6,9 @@
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,
-    "types": ["flowjs"],
-    "lib": ["dom", "es2018"]
+    "types": ["flowjs"]
   },
-  "exclude": ["src/test.ts", "**/*.spec.ts"]
+  "exclude": [
+    "**/*.spec.ts"
+  ]
 }
