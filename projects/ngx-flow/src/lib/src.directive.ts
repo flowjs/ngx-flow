@@ -5,10 +5,11 @@ import { Transfer } from './transfer';
   selector: '[flowSrc]'
 })
 export class SrcDirective {
-  protected fileReader = new FileReader();
+  protected fileReader;
 
   @Input()
   set flowSrc(transfer: Transfer) {
+    this.fileReader = new FileReader();
     this.fileReader.readAsDataURL(transfer.flowFile.file);
     this.fileReader.onload = (event: any) => {
       const url = event.target.result;
