@@ -1,23 +1,21 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  ViewChild,
-  AfterViewInit,
-  OnDestroy,
-  ChangeDetectorRef,
-  TrackByFunction
-} from '@angular/core';
-import { Transfer } from 'projects/ngx-flow/src/public_api';
-import { FlowDirective } from 'projects/ngx-flow/src/lib/flow.directive';
+import { AsyncPipe, PercentPipe, DecimalPipe, NgClass} from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { FlowDirective, NgxFlowModule } from '@flowjs/ngx-flow';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [
+    NgClass, DecimalPipe, PercentPipe, AsyncPipe,
+    NgxFlowModule
+  ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements AfterViewInit, OnDestroy {
+export class AppComponent {
+
   @ViewChild('flow', { static: false }) flow: FlowDirective | undefined;
 
   autoUploadSubscription: Subscription | undefined;
@@ -39,7 +37,4 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.autoUploadSubscription?.unsubscribe();
   }
 
-  trackByTransfer(index: number, transfer: Transfer) {
-    return transfer.id;
-  }
 }

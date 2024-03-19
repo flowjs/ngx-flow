@@ -1,6 +1,6 @@
 {
   "name": "@flowjs/ngx-flow",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "author": {
     "name": "Martin Nuc",
     "email": "martin@nuc.cz"
@@ -11,8 +11,8 @@
     "url": "https://github.com/flowjs/ngx-flow"
   },
   "peerDependencies": {
-    "@angular/common": "^16.1.8",
-    "@angular/core": "^16.1.8",
+    "@angular/common": "^17.0.0",
+    "@angular/core": "^17.0.0",
     "@flowjs/flow.js": "^2.13.0"
   },
   "dependencies": {
