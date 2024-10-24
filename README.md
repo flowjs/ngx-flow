@@ -31,6 +31,20 @@ You can also find example source code in the `src` folder.
 - ✅ demo using Stackblitz
 - ✅ support for server side rendering
 
+## Compatibility
+
+| Angular | @flowjs/ngx-flow |
+| :-----: | :--------------: |
+| 18      | ^18.0.0 |
+| 17      | 0.8.1   |
+| 16      | 0.7.2   |
+| 15      | \-      |
+| 14      | 0.6.0   |
+| 13      | 0.5.0   |
+| 12      | \-      |
+| 6 -> 11 | 0.4.6   |
+
+
 ## Install
 
 `npm install @flowjs/flow.js @flowjs/ngx-flow`
