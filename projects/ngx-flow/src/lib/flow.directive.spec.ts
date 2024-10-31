@@ -38,6 +38,7 @@ describe('Directive: Flow integration tests', () => {
   it('should initialize flowjs and export flow directive as template reference variable', () => {
     fixture.detectChanges();
     expect(component.flow instanceof FlowDirective).toBeTruthy();
+    expect(component.flow.flowJs).toBeDefined();
     expect(component.flow.flowJs.opts.target).toBe('http://localhost:3000/upload');
   });
 
@@ -209,10 +210,10 @@ describe('Directive: Flow SSR tests', () => {
     });
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
+  });
 
-    it('should not initialize flowjs when running on the server', () => {
-      fixture.detectChanges();
-      expect(component.flow).toBeUndefined();
-    });
+  it('should not initialize flowjs when running on the server', () => {
+    fixture.detectChanges();
+    expect(component.flow.flowJs).toBeUndefined();
   });
 });
