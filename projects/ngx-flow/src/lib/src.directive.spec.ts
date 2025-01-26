@@ -4,7 +4,8 @@ import { By } from '@angular/platform-browser';
 import { SrcDirective } from './src.directive';
 
 @Component({
-  template: `<img [flowSrc]="transfer">`
+  template: `<img [flowSrc]="transfer">`,
+  standalone: false
 })
 class TestComponent {
   transfer: any;

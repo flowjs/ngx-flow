@@ -2,7 +2,8 @@ import { Directive, ElementRef, Input } from '@angular/core';
 import { Transfer } from './transfer';
 
 @Directive({
-  selector: '[flowSrc]'
+  selector: '[flowSrc]',
+  standalone: false
 })
 export class SrcDirective {
   protected fileReader;
