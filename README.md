@@ -35,6 +35,7 @@ You can also find example source code in the `src` folder.
 
 | Angular | @flowjs/ngx-flow |
 | :-----: | :--------------: |
+| 19      | ^19.0.0 |
 | 18      | ^18.0.0 |
 | 17      | 0.8.1   |
 | 16      | 0.7.2   |
