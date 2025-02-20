@@ -5,7 +5,6 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [
     NgClass, DecimalPipe, PercentPipe, AsyncPipe,
     NgxFlowModule

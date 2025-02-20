@@ -5,6 +5,7 @@ import { By } from '@angular/platform-browser';
 
 @Component({
   template: `<div flowDrop [flow]="flowJs" #flowDrop="flowDrop"></div>`,
+  standalone: false
 })
 class TestComponent {
   flowJs: any;

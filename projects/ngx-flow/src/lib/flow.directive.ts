@@ -21,6 +21,7 @@ export interface NgxFlowEvent {
 @Directive({
   selector: '[flowConfig]',
   exportAs: 'flow',
+  standalone: false
 })
 export class FlowDirective {
   @Input()

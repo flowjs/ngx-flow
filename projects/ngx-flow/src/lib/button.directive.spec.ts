@@ -7,7 +7,8 @@ import { ButtonDirective } from './button.directive';
   template: `<input type="file"
                     flowButton
                     [flow]="flowJs"
-                    [flowAttributes]="flowAttributes">`
+                    [flowAttributes]="flowAttributes">`,
+  standalone: false
 })
 class TestComponent {
   flowJs: any;

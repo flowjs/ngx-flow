@@ -9,6 +9,7 @@ import { FlowMock } from './helpers/tests/flow-mock';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`,
+  standalone: false
 })
 class TestComponent {
   @ViewChild('flow', { static: true })
