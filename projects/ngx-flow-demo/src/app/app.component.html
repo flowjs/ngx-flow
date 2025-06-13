@@ -25,7 +25,7 @@
      Drop a file here
 </div>
 
-<button type="button" (click)="flow.upload()" [disabled]="!(flow.somethingToUpload$ | async)">Start upload</button>
+<button type="button" (click)="flow.upload()" [disabled]="(flow.somethingToUpload$ | async) === false">Start upload</button>
 <button type="button" (click)="flow.cancel()" [disabled]="!(flow.transfers$ | async)?.transfers?.length">Cancel all</button>
 Total progress: {{(flow.transfers$ | async)?.totalProgress | percent}}
 
@@ -44,7 +44,7 @@ Total progress: {{(flow.transfers$ | async)?.totalProgress | percent}}
       <div>complete: {{transfer.complete}}</div>
       <div>error: {{transfer.error}}</div>
 
-      <img [flowSrc]="transfer">
+      <img [flowSrc]="transfer" alt="transfer rendering">
 
       <button (click)="flow.pauseFile(transfer)">pause</button>
       <button (click)="flow.resumeFile(transfer)">resume</button>

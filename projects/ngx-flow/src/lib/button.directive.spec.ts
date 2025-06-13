@@ -1,28 +1,28 @@
 import { Component, DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ButtonDirective } from './button.directive';
+import { FlowButton } from './button.directive';
 
 @Component({
   template: `<input type="file"
                     flowButton
                     [flow]="flowJs"
                     [flowAttributes]="flowAttributes">`,
-  standalone: false
+  imports: [FlowButton]
 })
 class TestComponent {
   flowJs: any;
   flowAttributes: any;
 }
 
-describe('Directive: Button', () => {
+describe('FlowButton', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
   let inputElement: DebugElement;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestComponent, ButtonDirective]
+      imports: [TestComponent]
     });
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;

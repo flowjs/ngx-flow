@@ -1,10 +1,12 @@
-import { Directive, ElementRef, Input } from '@angular/core';
+import { Directive, ElementRef, inject, Input } from '@angular/core';
 
 @Directive({
-  selector: '[flowButton]',
-  standalone: false
+  selector: '[flowButton]'
 })
-export class ButtonDirective {
+export class FlowButton {
+
+  protected el = inject(ElementRef);
+
   protected _directoryOnly = false;
   @Input()
   set flowDirectoryOnly(directoriesOnly: boolean) {
@@ -38,5 +40,4 @@ export class ButtonDirective {
     );
   }
 
-  constructor(protected el: ElementRef) {}
 }

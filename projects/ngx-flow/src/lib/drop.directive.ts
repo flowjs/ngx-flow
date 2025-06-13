@@ -1,11 +1,14 @@
-import { Directive, Input, ElementRef, Renderer2, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, OnInit, Renderer2, inject } from '@angular/core';
 
 @Directive({
-  selector: '[flowDrop]',
-  exportAs: 'flowDrop',
-  standalone: false
+    selector: '[flowDrop]',
+    exportAs: 'flowDrop'
 })
-export class DropDirective implements OnInit {
+export class FlowDrop implements OnInit {
+
+  protected el = inject(ElementRef);
+  protected renderer = inject(Renderer2);
+
   protected flowJs?: flowjs.Flow;
 
   @Input()
@@ -24,8 +27,6 @@ export class DropDirective implements OnInit {
   disable() {
     this.flowJs?.unAssignDrop(this.el.nativeElement);
   }
-
-  constructor(protected el: ElementRef, protected renderer: Renderer2) {}
 
   ngOnInit() {
     this.renderer.listen('body', 'drop', (event) => event.preventDefault());
