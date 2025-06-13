@@ -11,7 +11,7 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 
 [https://stackblitz.com/edit/ngx-flow-example](https://stackblitz.com/edit/ngx-flow-example)
 
-You can also find example source code in the `src` folder.
+You can also find example source code in the `projects/ngx-flow-demo` folder.
 
 ## Roadmap
 
@@ -33,22 +33,28 @@ You can also find example source code in the `src` folder.
 
 ## Compatibility
 
-| Angular | @flowjs/ngx-flow |
-| :-----: | :--------------: |
-| 19      | ^19.0.0 |
-| 18      | ^18.0.0 |
-| 17      | 0.8.1   |
-| 16      | 0.7.2   |
-| 15      | \-      |
-| 14      | 0.6.0   |
-| 13      | 0.5.0   |
-| 12      | \-      |
-| 6 -> 11 | 0.4.6   |
+From the v18, we aligned the main version of this library with Angular (and Angular CLI).
+
+For previous versions, use the matrix below:
+
+| Angular | @flowjs/ngx-flow  |
+| :-----: | :---------------: |
+| 17      | 0.8.1             |
+| 16      | 0.7.2             |
+| 15      | _(not available)_ |
+| 14      | 0.6.0             |
+| 13      | 0.5.0             |
+| 12      | _(not available)_ |
+| 6 -> 11 | 0.4.6             |
 
 
 ## Install
 
-`npm install @flowjs/flow.js @flowjs/ngx-flow`
+Install dependencies :
+
+```bash
+npm install @flowjs/flow.js @flowjs/ngx-flow
+```
 
 Import in your module:
 
