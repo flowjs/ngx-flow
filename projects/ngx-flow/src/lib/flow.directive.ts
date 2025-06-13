@@ -21,7 +21,7 @@ export interface NgxFlowEvent {
   selector: '[flowConfig]',
   exportAs: 'flow'
 })
-export class Flow {
+export class FlowConfig {
 
   protected flowConstructor = inject(FlowInjectionToken);
   protected platform = inject(PLATFORM_ID);

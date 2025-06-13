@@ -1,6 +1,6 @@
 import { AsyncPipe, DecimalPipe, NgClass, PercentPipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, ViewChild } from '@angular/core';
-import { Flow, FlowButton, FlowDrop, FlowSrc } from '@flowjs/ngx-flow';
+import { FlowButton, FlowConfig, FlowDrop, FlowSrc } from '@flowjs/ngx-flow';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
 
     // NgxFlowModule,
 
-    Flow,
+    FlowConfig,
     FlowDrop,
     FlowSrc,
     FlowButton
@@ -26,7 +26,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private cd = inject(ChangeDetectorRef);
 
-  @ViewChild('flow', { static: false }) flow?: Flow;
+  @ViewChild('flow', { static: false }) flow?: FlowConfig;
 
   autoUploadSubscription?: Subscription;
 
