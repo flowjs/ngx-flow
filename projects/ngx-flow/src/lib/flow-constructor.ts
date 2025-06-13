@@ -1,3 +1,1 @@
-export interface FlowConstructor {
-  new (flowOptions: flowjs.FlowOptions): flowjs.Flow;
-}
+export type FlowConstructor = new (flowOptions: flowjs.FlowOptions) => flowjs.Flow;

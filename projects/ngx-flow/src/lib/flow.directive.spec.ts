@@ -1,30 +1,30 @@
-import { Component, ViewChild, PLATFORM_ID } from '@angular/core';
+import { Component, PLATFORM_ID, ViewChild } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { first, skip } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
-import { FlowDirective, FlowChangeEvent, NgxFlowEvent } from './flow.directive';
-import { trasnferMockFactory } from './helpers/tests/transfer-mock-factory';
+import { FlowChangeEvent, Flow, NgxFlowEvent } from './flow.directive';
 import { flowFileMockFactory } from './helpers/tests/flow-file-mock-factory';
 import { FlowMock } from './helpers/tests/flow-mock';
+import { trasnferMockFactory } from './helpers/tests/transfer-mock-factory';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`,
-  standalone: false
+  imports: [Flow]
 })
 class TestComponent {
   @ViewChild('flow', { static: true })
-  flow!: FlowDirective;
+  flow!: Flow;
 
   config = { target: 'http://localhost:3000/upload' };
 }
 
-describe('Directive: Flow integration tests', () => {
+describe('Flow', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestComponent, FlowDirective],
+      imports: [TestComponent],
       providers: [
         {
           provide: FlowInjectionToken,
@@ -38,7 +38,7 @@ describe('Directive: Flow integration tests', () => {
 
   it('should initialize flowjs and export flow directive as template reference variable', () => {
     fixture.detectChanges();
-    expect(component.flow instanceof FlowDirective).toBeTruthy();
+    expect(component.flow instanceof Flow).toBeTruthy();
     expect(component.flow.flowJs).toBeDefined();
     expect(component.flow.flowJs.opts.target).toBe('http://localhost:3000/upload');
   });
@@ -191,13 +191,13 @@ describe('Directive: Flow integration tests', () => {
   });
 });
 
-describe('Directive: Flow SSR tests', () => {
+describe('Flow (SSR)', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestComponent, FlowDirective],
+      imports: [TestComponent, Flow],
       providers: [
         {
           provide: FlowInjectionToken,

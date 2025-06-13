@@ -1,25 +1,34 @@
-import { AsyncPipe, PercentPipe, DecimalPipe, NgClass} from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
-import { FlowDirective, NgxFlowModule } from '@flowjs/ngx-flow';
+import { AsyncPipe, DecimalPipe, NgClass, PercentPipe } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, ViewChild } from '@angular/core';
+import { Flow, FlowButton, FlowDrop, FlowSrc } from '@flowjs/ngx-flow';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   imports: [
-    NgClass, DecimalPipe, PercentPipe, AsyncPipe,
-    NgxFlowModule
+    NgClass,
+    DecimalPipe,
+    PercentPipe,
+    AsyncPipe,
+
+    // NgxFlowModule,
+
+    Flow,
+    FlowDrop,
+    FlowSrc,
+    FlowButton
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit, OnDestroy {
 
-  @ViewChild('flow', { static: false }) flow: FlowDirective | undefined;
+  private cd = inject(ChangeDetectorRef);
 
-  autoUploadSubscription: Subscription | undefined;
+  @ViewChild('flow', { static: false }) flow?: Flow;
 
-  constructor(private cd: ChangeDetectorRef) {}
+  autoUploadSubscription?: Subscription;
 
   ngAfterViewInit() {
     this.autoUploadSubscription = this.flow?.events$.subscribe(event => {

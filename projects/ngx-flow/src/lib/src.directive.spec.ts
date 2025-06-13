@@ -1,24 +1,24 @@
 import { Component, DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { SrcDirective } from './src.directive';
+import { FlowSrc } from './src.directive';
 
 @Component({
-  template: `<img [flowSrc]="transfer">`,
-  standalone: false
+  template: `<img [flowSrc]="transfer" alt="flow image">`,
+  imports: [FlowSrc]
 })
 class TestComponent {
   transfer: any;
 }
 
-describe('Directive: Src', () => {
+describe('FlowSrc', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
   let imgElement: DebugElement;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestComponent, SrcDirective]
+      imports: [TestComponent]
     });
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;

@@ -1,19 +1,20 @@
-import { DropDirective } from './drop.directive';
-import { Component, DebugElement, ViewChild, Renderer2 } from '@angular/core';
+import { Component, DebugElement, Renderer2, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { FlowDrop } from './drop.directive';
 
 @Component({
   template: `<div flowDrop [flow]="flowJs" #flowDrop="flowDrop"></div>`,
-  standalone: false
+  imports: [FlowDrop]
 })
 class TestComponent {
-  flowJs: any;
+  flowJs?: Partial<flowjs.Flow>;
 
   @ViewChild('flowDrop', { static: false })
-  flowDrop!: DropDirective;
+  flowDrop!: FlowDrop;
 }
-describe('Directive: Drop', () => {
+
+describe('FlowDrop', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
   let dropAreElement: DebugElement;
@@ -21,7 +22,7 @@ describe('Directive: Drop', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestComponent, DropDirective],
+      imports: [TestComponent],
       providers: [Renderer2],
     });
     fixture = TestBed.createComponent(TestComponent);
@@ -64,10 +65,11 @@ describe('Directive: Drop', () => {
 
   it('should attach drop and dragover listeners to body', () => {
     renderer = fixture.componentRef.injector.get(Renderer2);
-    spyOn(renderer, 'listen').and.callThrough();
+    const listenSpy = spyOn(renderer, 'listen').and.callThrough();
     fixture.detectChanges();
+
     // cannot use toHaveBeenCalledWith: https://github.com/jasmine/jasmine/issues/228
-    expect((renderer.listen as any).calls.allArgs()).toEqual([
+    expect(listenSpy.calls.allArgs()).toEqual([
       ['body', 'drop', jasmine.any(Function)],
       ['body', 'dragover', jasmine.any(Function)],
     ]);
