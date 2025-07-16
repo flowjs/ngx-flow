@@ -235,13 +235,13 @@ Subscribe to `events$`. NgxFlow listens for these events: `filesSubmitted`, `fil
 
 ```typescript
 export class AppComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('flow')
-  flow: FlowDirective;
+  @ViewChild('flow', { static: false })
+  flow?: FlowConfig;
 
-  autoUploadSubscription: Subscription;
+  autoUploadSubscription?: Subscription;
 
   ngAfterViewInit() {
-    this.autoUploadSubscription = this.flow.events$.subscribe((event) => {
+    this.autoUploadSubscription = this.flow?.events$.subscribe(event => {
       if (event.type === 'filesSubmitted') {
         this.flow.upload();
       }

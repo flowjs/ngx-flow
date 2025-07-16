@@ -1,18 +1,17 @@
 # NgxFlow
 
-The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
-
 [![Build Status](https://travis-ci.com/flowjs/ngx-flow.svg?branch=master)](https://travis-ci.com/flowjs/ngx-flow)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/test_coverage)](https://codeclimate.com/github/flowjs/ngx-flow/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/maintainability)](https://codeclimate.com/github/flowjs/ngx-flow/maintainability)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
+The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
 ## Demo
 
 [https://stackblitz.com/edit/ngx-flow-example](https://stackblitz.com/edit/ngx-flow-example)
 
-You can also find example source code in the `src` folder.
+You can also find example source code in the `projects/ngx-flow-demo` folder.
 
 ## Roadmap
 
@@ -32,9 +31,30 @@ You can also find example source code in the `src` folder.
 - ✅ demo using Stackblitz
 - ✅ support for server side rendering
 
+## Compatibility
+
+From the v18, we aligned the main version of this library with Angular (and Angular CLI).
+
+For previous versions, use the matrix below:
+
+| Angular | @flowjs/ngx-flow  |
+| :-----: | :---------------: |
+| 17      | 0.8.1             |
+| 16      | 0.7.2             |
+| 15      | _(not available)_ |
+| 14      | 0.6.0             |
+| 13      | 0.5.0             |
+| 12      | _(not available)_ |
+| 6 -> 11 | 0.4.6             |
+
+
 ## Install
 
-`npm install @flowjs/flow.js @flowjs/ngx-flow`
+Install dependencies :
+
+```bash
+npm install @flowjs/flow.js @flowjs/ngx-flow
+```
 
 Import in your module:
 
@@ -215,13 +235,13 @@ Subscribe to `events$`. NgxFlow listens for these events: `filesSubmitted`, `fil
 
 ```typescript
 export class AppComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('flow')
-  flow: FlowDirective;
+  @ViewChild('flow', { static: false })
+  flow?: FlowConfig;
 
-  autoUploadSubscription: Subscription;
+  autoUploadSubscription?: Subscription;
 
   ngAfterViewInit() {
-    this.autoUploadSubscription = this.flow.events$.subscribe((event) => {
+    this.autoUploadSubscription = this.flow?.events$.subscribe(event => {
       if (event.type === 'filesSubmitted') {
         this.flow.upload();
       }
@@ -236,7 +256,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
 ### Development
 
-`npm run build` - builds the library into dist folder
+`npm run build:lib` - builds the library into dist folder
 
 After that you can publish to npm repository from `dist` folder:
 
