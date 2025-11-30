@@ -1,6 +1,3 @@
-/*
- * Public API Surface of ngx-flow
- */
 export * from './lib/button.directive';
 export * from './lib/drop.directive';
 export * from './lib/src.directive';

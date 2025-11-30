@@ -1,4 +1,4 @@
-import { Component, DebugElement, Renderer2, ViewChild } from '@angular/core';
+import { Component, DebugElement, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FlowDrop } from './drop.directive';
@@ -18,12 +18,10 @@ describe('FlowDrop', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
   let dropAreElement: DebugElement;
-  let renderer: Renderer2;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [TestComponent],
-      providers: [Renderer2],
     });
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
@@ -63,15 +61,24 @@ describe('FlowDrop', () => {
     );
   });
 
-  it('should attach drop and dragover listeners to body', () => {
-    renderer = fixture.componentRef.injector.get(Renderer2);
-    const listenSpy = spyOn(renderer, 'listen').and.callThrough();
+  it('should prevent default behavior on drop and dragover events', () => {
+    component.flowJs = {
+      assignDrop: jasmine.createSpy(),
+      unAssignDrop: jasmine.createSpy(),
+    };
     fixture.detectChanges();
 
-    // cannot use toHaveBeenCalledWith: https://github.com/jasmine/jasmine/issues/228
-    expect(listenSpy.calls.allArgs()).toEqual([
-      ['body', 'drop', jasmine.any(Function)],
-      ['body', 'dragover', jasmine.any(Function)],
-    ]);
+    const dropEvent = new DragEvent('drop', { cancelable: true });
+    const dragoverEvent = new DragEvent('dragover', { cancelable: true });
+
+    spyOn(dropEvent, 'preventDefault');
+    spyOn(dragoverEvent, 'preventDefault');
+
+    dropAreElement.nativeElement.dispatchEvent(dropEvent);
+    dropAreElement.nativeElement.dispatchEvent(dragoverEvent);
+    fixture.detectChanges();
+
+    expect(dropEvent.preventDefault).toHaveBeenCalledTimes(1);
+    expect(dragoverEvent.preventDefault).toHaveBeenCalledTimes(1);
   });
 });

@@ -5,7 +5,7 @@ import { FlowInjectionToken } from './flow-injection-token';
 import { FlowChangeEvent, FlowConfig, NgxFlowEvent } from './flow.directive';
 import { flowFileMockFactory } from './helpers/tests/flow-file-mock-factory';
 import { FlowMock } from './helpers/tests/flow-mock';
-import { trasnferMockFactory } from './helpers/tests/transfer-mock-factory';
+import { transferMockFactory } from './helpers/tests/transfer-mock-factory';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`,
@@ -86,7 +86,7 @@ describe('FlowConfig', () => {
         done();
       });
 
-    const transferMock = trasnferMockFactory('file.txt');
+    const transferMock = transferMockFactory('file.txt');
     component.flow.pauseFile(transferMock);
   });
 
@@ -106,15 +106,15 @@ describe('FlowConfig', () => {
 
   it('should remove the file', () => {
     fixture.detectChanges();
-    const fileMock = trasnferMockFactory('file.txt');
+    const fileMock = transferMockFactory('file.txt');
     component.flow.cancelFile(fileMock);
     expect(fileMock.flowFile.cancel).toHaveBeenCalled();
   });
 
   it('should pause file and emit event', (done) => {
     fixture.detectChanges();
-    const fileMock = trasnferMockFactory('file.txt');
-    component.flow.pauseOrResumeEvent$.pipe(first()).subscribe(() => {
+    const fileMock = transferMockFactory('file.txt');
+    component.flow['pauseOrResumeSjt'].pipe(first()).subscribe(() => {
       done();
     });
 
@@ -124,8 +124,8 @@ describe('FlowConfig', () => {
 
   it('should resume file and emit event', (done) => {
     fixture.detectChanges();
-    const fileMock = trasnferMockFactory('file.txt');
-    component.flow.pauseOrResumeEvent$.pipe(first()).subscribe(() => {
+    const fileMock = transferMockFactory('file.txt');
+    component.flow['pauseOrResumeSjt'].pipe(first()).subscribe(() => {
       done();
     });
 

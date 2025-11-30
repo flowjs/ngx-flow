@@ -1,35 +1,37 @@
-import { Directive, ElementRef, Input, OnInit, Renderer2, inject } from '@angular/core';
+import { Directive, effect, ElementRef, inject, input } from '@angular/core';
 
 @Directive({
-    selector: '[flowDrop]',
-    exportAs: 'flowDrop'
+  selector: '[flowDrop]',
+  exportAs: 'flowDrop',
+  host: {
+    '(dragover)': 'stop($event)',
+    '(drop)': 'stop($event)',
+  },
 })
-export class FlowDrop implements OnInit {
+export class FlowDrop {
+  private readonly el = inject(ElementRef);
 
-  protected el = inject(ElementRef);
-  protected renderer = inject(Renderer2);
+  public readonly flow = input<flowjs.Flow | undefined>();
 
-  protected flowJs?: flowjs.Flow;
-
-  @Input()
-  set flow(flow: flowjs.Flow) {
-    this.flowJs = flow;
-    if (!flow) {
-      return;
-    }
-    this.enable();
+  constructor() {
+    effect((onCleanUp) => {
+      const flow = this.flow();
+      if (flow) {
+        this.enable(flow);
+      }
+      onCleanUp(() => this.disable(flow));
+    });
   }
 
-  enable() {
-    this.flowJs?.assignDrop(this.el.nativeElement);
+  enable(flow = this.flow()) {
+    flow?.assignDrop(this.el.nativeElement);
   }
 
-  disable() {
-    this.flowJs?.unAssignDrop(this.el.nativeElement);
+  disable(flow = this.flow()) {
+    flow?.unAssignDrop(this.el.nativeElement);
   }
 
-  ngOnInit() {
-    this.renderer.listen('body', 'drop', (event) => event.preventDefault());
-    this.renderer.listen('body', 'dragover', (event) => event.preventDefault());
+  protected stop(event: DragEvent): void {
+    event.preventDefault();
   }
 }

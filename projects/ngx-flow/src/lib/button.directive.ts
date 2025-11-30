@@ -1,43 +1,37 @@
-import { Directive, ElementRef, inject, Input } from '@angular/core';
+import { booleanAttribute, computed, Directive, effect, ElementRef, inject, input } from '@angular/core';
 
 @Directive({
-  selector: '[flowButton]'
+  selector: '[flowButton]',
 })
 export class FlowButton {
+  private readonly el = inject(ElementRef);
 
-  protected el = inject(ElementRef);
+  public readonly flowDirectoryOnly = input(false, { transform: booleanAttribute });
+  public readonly flowAttributes = input<object | undefined>(undefined);
+  public readonly flow = input<flowjs.Flow | undefined>();
 
-  protected _directoryOnly = false;
-  @Input()
-  set flowDirectoryOnly(directoriesOnly: boolean) {
-    this._directoryOnly = directoriesOnly;
-    this.setup();
-  }
-
-  protected _attributes?: object;
-  @Input()
-  set flowAttributes(attributes: object) {
-    this._attributes = attributes;
-    this.setup();
-  }
-
-  protected _flow?: flowjs.Flow;
-  @Input()
-  set flow(flow: flowjs.Flow) {
-    this._flow = flow;
-    this.setup();
-  }
-
-  setup() {
-    if (!this._flow) {
-      return;
+  private readonly browseConfig = computed(() => {
+    const flow = this.flow();
+    if (!flow) {
+      return null;
     }
-    this._flow.assignBrowse(
-      this.el.nativeElement,
-      this._directoryOnly,
-      this._flow.opts.singleFile,
-      this._attributes
-    );
-  }
 
+    return {
+      flow,
+      directoryOnly: this.flowDirectoryOnly(),
+      attributes: this.flowAttributes(),
+      singleFile: flow.opts.singleFile,
+    };
+  });
+
+  constructor() {
+    effect(() => {
+      const cfg = this.browseConfig();
+      if (!cfg) {
+        return;
+      }
+
+      cfg.flow.assignBrowse(this.el.nativeElement, cfg.directoryOnly, cfg.singleFile, cfg.attributes);
+    });
+  }
 }

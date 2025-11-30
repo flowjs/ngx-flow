@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Directive, inject, Input, PLATFORM_ID } from '@angular/core';
+import { DestroyRef, Directive, effect, inject, input, PLATFORM_ID, signal } from '@angular/core';
 import { fromEvent, merge, Observable, ReplaySubject, Subject } from 'rxjs';
 import { JQueryStyleEventEmitter } from 'rxjs/internal/observable/fromEvent';
 import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
@@ -7,6 +7,7 @@ import { FlowInjectionToken } from './flow-injection-token';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
 import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export interface FlowChangeEvent<T extends flowjs.EventName> {
   type: T;
@@ -19,32 +20,52 @@ export interface NgxFlowEvent {
 
 @Directive({
   selector: '[flowConfig]',
-  exportAs: 'flow'
+  exportAs: 'flow',
 })
 export class FlowConfig {
+  protected readonly flowConstructor = inject(FlowInjectionToken);
+  protected readonly platform = inject(PLATFORM_ID);
 
-  protected flowConstructor = inject(FlowInjectionToken);
-  protected platform = inject(PLATFORM_ID);
+  /** Input configuration for FlowJS */
+  public readonly flowConfig = input.required<flowjs.FlowOptions>();
 
-  @Input()
-  set flowConfig(options: flowjs.FlowOptions) {
-    if (isPlatformBrowser(this.platform)) {
-      this.flowJs = new this.flowConstructor(options);
-      this.flow$.next(this.flowJs);
-    }
-  }
+  /** ReplaySubject emitting the current FlowJS instance for event streams */
+  private readonly flowSjt = new ReplaySubject<flowjs.Flow>(1);
 
-  flowJs!: flowjs.Flow;
+  /** Emits whenever a file is paused or resumed */
+  private readonly pauseOrResumeSjt = new Subject<void>();
 
-  protected flow$ = new ReplaySubject<flowjs.Flow>(1);
+  /** The current FlowJS instance created from provided {@link flowConfig} */
+  public flowJs!: flowjs.Flow;
 
-  pauseOrResumeEvent$ = new Subject<void>();
-
-  events$ = this.flow$.pipe(
-    switchMap((flow) => merge(this.flowEvents(flow), this.ngxFlowEvents()))
+  /**
+   * Observable merging all `flow.js` standard events and custom `ngx-flow` events.
+   *
+   * - **`flow.js`** : all events from {@link flowjs.FlowEventMap} (see [flow.js README](https://github.com/flowjs/flow.js?tab=readme-ov-file#events))
+   * - **`ngx-flow`** :
+   *   - `pauseOrResume` When a file is paused or resumed
+   *   - `newFlowJsInstance` A new FlowJS instance is created (a new {@link flowConfig} is provided)
+   */
+  public readonly events$ = this.flowSjt.pipe(
+    takeUntilDestroyed(),
+    switchMap((flow) => {
+      return merge(this.flowEvents(flow), this.ngxFlowEvents());
+    })
   );
 
-  transfers$: Observable<UploadState> = this.events$.pipe(
+  /**
+   * Observable that emits the current upload state, derived from the FlowJS instance.
+   *
+   * Each emission is an object of type `UploadState` containing:
+   * - `transfers`: an array of `Transfer` objects representing the current files in the flow
+   * - `flow`: the current FlowJS instance
+   * - `totalProgress`: the total upload progress as a number between 0 and 1
+   *
+   * The observable updates whenever any FlowJS event occurs (e.g., file added, progress, success, error),
+   * ensuring subscribers always receive the latest state.
+   */
+  public readonly transfers$: Observable<UploadState> = this.events$.pipe(
+    takeUntilDestroyed(),
     map(() => this.flowJs.files),
     map((files: flowjs.FlowFile[] = []) => ({
       transfers: files.map((flowFile) => flowFile2Transfer(flowFile)),
@@ -54,17 +75,65 @@ export class FlowConfig {
     shareReplay(1)
   );
 
-  somethingToUpload$ = this.transfers$.pipe(
-    map(
-      (state) => state.transfers.some((file) => !file.success),
-      startWith(false)
-    )
+  /** Observable indicating whether there are any files still pending upload. */
+  public readonly somethingToUpload$ = this.transfers$.pipe(
+    takeUntilDestroyed(),
+    map((state) => state.transfers.some((file) => !file.success)),
+    startWith(false)
   );
 
-  private flowEvents(
-    flow: flowjs.Flow
-  ): Observable<FlowChangeEvent<flowjs.EventName>> {
-    const events = [
+  constructor() {
+    effect(() => {
+      // Create a new FlowJS instance whenever a new FlowJS configuration is provided
+      const config = this.flowConfig();
+      if (!config || !isPlatformBrowser(this.platform)) {
+        return;
+      }
+
+      this.flowJs = new this.flowConstructor(config);
+      this.flowSjt.next(this.flowJs);
+    });
+  }
+
+  /** Starts uploading all pending files in the FlowJS instance */
+  upload(): void {
+    this.flowJs.upload();
+  }
+
+  /** Cancels all uploads in the current FlowJS instance */
+  cancel(): void {
+    this.flowJs.cancel();
+  }
+
+  /**
+   * Cancels a specific file upload.
+   * @param file transfer object representing the file
+   */
+  cancelFile(file: Transfer): void {
+    file.flowFile.cancel();
+  }
+
+  /**
+   * Pauses a specific file upload.
+   * @param file transfer object representing the file
+   */
+  pauseFile(file: Transfer): void {
+    file.flowFile.pause();
+    this.pauseOrResumeSjt.next();
+  }
+
+  /**
+   * Resumes a specific file upload.
+   * @param file transfer object representing the file
+   */
+  resumeFile(file: Transfer): void {
+    file.flowFile.resume();
+    this.pauseOrResumeSjt.next();
+  }
+
+  /** Creates an Observable merging all standard `flow.js` events for the given instance. */
+  private flowEvents(flow: flowjs.Flow): Observable<FlowChangeEvent<flowjs.EventName>> {
+    return merge(
       this.listenForEvent(flow, 'fileSuccess'),
       this.listenForEvent(flow, 'fileProgress'),
       this.listenForEvent(flow, 'fileAdded'),
@@ -76,59 +145,28 @@ export class FlowConfig {
       this.listenForEvent(flow, 'uploadStart'),
       this.listenForEvent(flow, 'complete'),
       this.listenForEvent(flow, 'progress'),
-    ];
-    return merge(...events);
-  }
-
-  private ngxFlowEvents(): Observable<NgxFlowEvent> {
-    const pauseOrResumeEvent$ = this.pauseOrResumeEvent$.pipe(
-      map(() => ({
-        type: 'pauseOrResume',
-      } as NgxFlowEvent))
     );
-    const newFlowInstanceEvent$ = this.flow$.pipe(
-      map(() => ({
-        type: 'newFlowJsInstance',
-      } as NgxFlowEvent)
-      ));
-    const events = [pauseOrResumeEvent$, newFlowInstanceEvent$];
-    return merge(...events);
   }
 
-  upload(): void {
-    this.flowJs.upload();
+  /** Creates an Observable for custom `ngx-flow` events */
+  private ngxFlowEvents(): Observable<NgxFlowEvent> {
+    return merge(
+      this.pauseOrResumeSjt.pipe(map(() => ({type: 'pauseOrResume'} as NgxFlowEvent))),
+      this.flowSjt.pipe(map(() => ({type: 'newFlowJsInstance'} as NgxFlowEvent)))
+    );
   }
 
-  cancel(): void {
-    this.flowJs.cancel();
-  }
-
-  cancelFile(file: Transfer): void {
-    file.flowFile.cancel();
-  }
-
-  pauseFile(file: Transfer): void {
-    file.flowFile.pause();
-    this.pauseOrResumeEvent$.next();
-  }
-
-  resumeFile(file: Transfer): void {
-    file.flowFile.resume();
-    this.pauseOrResumeEvent$.next();
-  }
-
-  protected listenForEvent<T extends flowjs.EventName, R extends flowjs.FlowEventFromEventName<T>>(
+  /** Creates an Observable for a specific FlowJS event. */
+  private listenForEvent<T extends flowjs.EventName, R extends flowjs.FlowEventFromEventName<T>>(
     flow: flowjs.Flow,
     eventName: T
-  ): Observable<{ type: T; event: R; }> {
-    return fromEvent<R>(
-      flow as JQueryStyleEventEmitter<any, R>,
-      eventName
-    ).pipe(
-      map((args) => ({
-        type: eventName,
-        event: args,
-      }))
-    );
+  ): Observable<FlowChangeEvent<T>> {
+    return fromEvent<R>(flow as JQueryStyleEventEmitter<any, R>, eventName)
+      .pipe(
+        map((args) => ({
+          type: eventName,
+          event: args,
+        }))
+      );
   }
 }
