@@ -25,10 +25,10 @@ import { FlowButton, FlowConfig, FlowDrop, FlowSrc } from '@flowjs/ngx-flow';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements AfterViewInit {
-  private destroyRef = inject(DestroyRef);
-  private cd = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cd = inject(ChangeDetectorRef);
 
-  flow = viewChild<FlowConfig>('flow');
+  protected readonly flow = viewChild<FlowConfig>('flow');
 
   chunkSize = 100;
 
