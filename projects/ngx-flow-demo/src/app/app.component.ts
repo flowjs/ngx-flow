@@ -1,7 +1,8 @@
 import { AsyncPipe, DecimalPipe, NgClass, PercentPipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { FlowButton, FlowConfig, FlowDrop, FlowSrc } from '@flowjs/ngx-flow';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,7 @@ import { Subscription } from 'rxjs';
     DecimalPipe,
     PercentPipe,
     AsyncPipe,
+    FormsModule,
 
     // NgxFlowModule,
 
@@ -22,27 +24,25 @@ import { Subscription } from 'rxjs';
   styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements AfterViewInit, OnDestroy {
-
+export class AppComponent implements AfterViewInit {
+  private destroyRef = inject(DestroyRef);
   private cd = inject(ChangeDetectorRef);
 
-  @ViewChild('flow', { static: false }) flow?: FlowConfig;
+  flow = viewChild<FlowConfig>('flow');
 
-  autoUploadSubscription?: Subscription;
+  chunkSize = 100;
 
   ngAfterViewInit() {
-    this.autoUploadSubscription = this.flow?.events$.subscribe(event => {
-      switch (event.type) {
-        case 'filesSubmitted':
-          return this.flow?.upload();
-        case 'newFlowJsInstance':
-          this.cd.detectChanges();
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    this.autoUploadSubscription?.unsubscribe();
+    this.flow()?.events$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        switch (event.type) {
+          case 'filesSubmitted':
+            return this.flow()?.upload();
+          case 'newFlowJsInstance':
+            this.cd.detectChanges();
+        }
+      });
   }
 
 }

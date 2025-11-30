@@ -12,7 +12,15 @@
   }
 </p>
 
-<ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload'}"></ng-container>
+<form>
+  <label for="chunkSize">Chunk size:</label>
+  <input id="chunkSize" name="chunkSize" type="number" [(ngModel)]="chunkSize" />
+</form>
+
+<ng-container #flow="flow" [flowConfig]="{
+  target: 'http://localhost:3000/upload',
+  chunkSize: chunkSize
+}"></ng-container>
 
 <input type="file"
        flowButton
