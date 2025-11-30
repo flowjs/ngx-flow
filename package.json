@@ -42,9 +42,9 @@
     "@types/express": "^5.0.3",
     "@types/flowjs": "^2.13.14",
     "@types/jasmine": "~5.1.0",
-    "angular-eslint": "^20.7.0",
+    "angular-eslint": "20.7.0",
     "connect-multiparty": "^2.2.0",
-    "eslint": "^9.28.0",
+    "eslint": "^9.39.1",
     "express": "^5.1.0",
     "karma-chrome-launcher": "^3.2.0",
     "karma-coverage": "^2.2.1",
@@ -53,6 +53,6 @@
     "karma-spec-reporter": "^0.0.36",
     "ng-packagr": "^20.0.0",
     "typescript": ">=5.8.0 <5.9.0",
-    "typescript-eslint": "8.33.1"
+    "typescript-eslint": "8.46.4"
   }
 }
