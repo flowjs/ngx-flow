@@ -11,16 +11,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Find associated PR
-        id: find_pr
-        uses: jwalton/gh-find-current-pr@v1
-        with:
-          state: open
-      - name: Exit if no PR found
-        if: steps.find_pr.outputs.pr == ''
-        run: |
-          echo "Aucune PR associée à ce push. CI ignorée."
-          exit 0
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -28,7 +18,12 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Run unit tests
-        run: npx ng test ngx-flow --watch=false --browsers=ChromeHeadless --code-coverage
       - name: Build Angular library
         run: npx ng build ngx-flow
+      - name: Run unit tests
+        run: npx ng test ngx-flow --watch=false --browsers=ChromeHeadless --code-coverage
+      - name: Send coverage to QLTY
+        uses: qltysh/qlty-action/coverage@v2
+        with:
+          token: ${{secrets.QLTY_COVERAGE_TOKEN}}
+          files: coverage/ngx-flow/lcov.info
