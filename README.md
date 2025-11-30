@@ -13,24 +13,6 @@ The purpose of this package is to create a wrapper for Angular for fileupload us
 
 You can also find example source code in the `projects/ngx-flow-demo` folder.
 
-## Roadmap
-
-- ✅ upload single file
-- ✅ upload multiple files
-- ✅ queue management
-- ✅ error handling
-- ✅ pause / resume upload
-- ✅ cancel upload, cancel all uploads
-- ✅ upload progress
-- ✅ file / directory restrictions
-- ✅ drag & drop
-- ✅ display uploaded image
-- ✅ tests
-- ✅ upload right after selecting file
-- ✅ run tests using TravisCI
-- ✅ demo using Stackblitz
-- ✅ support for server side rendering
-
 ## Compatibility
 
 From the v18, we aligned the main version of this library with Angular (and Angular CLI).
@@ -39,6 +21,9 @@ For previous versions, use the matrix below:
 
 | Angular | @flowjs/ngx-flow  |
 | :-----: | :---------------: |
+| 21      | ^21.0.0           |
+| ...     | ...               |
+| 18      | ^18.0.0           |
 | 17      | 0.8.1             |
 | 16      | 0.7.2             |
 | 15      | _(not available)_ |
@@ -50,29 +35,28 @@ For previous versions, use the matrix below:
 
 ## Install
 
-Install dependencies :
+1. Install dependencies :
+   ```bash
+   npm install @flowjs/flow.js @flowjs/ngx-flow
+   ```
 
-```bash
-npm install @flowjs/flow.js @flowjs/ngx-flow
-```
+2. Import in your module:
+   ```typescript
+   import { NgxFlowModule, FlowInjectionToken } from '@flowjs/ngx-flow';
+   import Flow from '@flowjs/flow.js'; 
+   @NgModule({
+     imports: [NgxFlowModule],
+     providers: [
+       {
+         provide: FlowInjectionToken,
+         useValue: Flow
+       }
+     ]
+   })
+   export class AppModule
+   ```
 
-Import in your module:
-
-```typescript
-import { NgxFlowModule, FlowInjectionToken } from '@flowjs/ngx-flow';
-import Flow from '@flowjs/flow.js';
-
-@NgModule({
-  imports: [NgxFlowModule],
-  providers: [
-    {
-      provide: FlowInjectionToken,
-      useValue: Flow
-    }
-  ]
-})
-export class AppModule
-```
+   **You can also use this library using standalone component**
 
 We use dependecy injection to provide flow.js library.
 
@@ -103,7 +87,9 @@ We use dependecy injection to provide flow.js library.
 1. You can than subscribe to observable of transfers:
 
    ```html
-   <div *ngFor="let transfer of (flow.transfers$ | async).transfers"></div>
+   @for (transfer of (flow.transfers$ | async).transfers; track: transfer.name) {
+     <!-- ... --->
+   }
    ```
 
 1. After adding files you can begin upload using `upload()` method:
@@ -177,6 +163,24 @@ Observable `flow.transfers$` emits state in form:
 }
 ```
 
+## Roadmap
+
+- ✅ upload single file
+- ✅ upload multiple files
+- ✅ queue management
+- ✅ error handling
+- ✅ pause / resume upload
+- ✅ cancel upload, cancel all uploads
+- ✅ upload progress
+- ✅ file / directory restrictions
+- ✅ drag & drop
+- ✅ display uploaded image
+- ✅ tests
+- ✅ upload right after selecting file
+- ✅ run tests using TravisCI
+- ✅ demo using Stackblitz
+- ✅ support for server side rendering
+
 ## FAQ
 
 ### I need access to flow.js object
@@ -189,17 +193,11 @@ You can find it under `flow` variable.
 
 ### I see flickering when upload is in progress
 
-Use `trackBy` for `ngFor`:
+Use `track` for `@for`:
 
 ```html
-<div *ngFor="let transfer of (flow.transfers$ | async).transfers; trackBy: trackTransfer"></div>
-```
-
-```typescript
-export class AppComponent {
-  trackTransfer(transfer: Transfer) {
-    return transfer.id;
-  }
+@for (transfer of (flow.transfers$ | async).transfers; track: transfer.name) {
+  <!-- ... --->
 }
 ```
 
@@ -224,9 +222,9 @@ Add `flowDirectoryOnly="true"` to your button:
 Use directive `flowSrc`:
 
 ```html
-<div *ngFor="let transfer of (flow.transfers$ | async).transfers">
+@for (transfer of (flow.transfers$ | async).transfers; track transfer.name) {
   <img [flowSrc]="transfer" />
-</div>
+}
 ```
 
 ### How to trigger upload right after picking the file?
@@ -234,23 +232,24 @@ Use directive `flowSrc`:
 Subscribe to `events$`. NgxFlow listens for these events: `filesSubmitted`, `fileRemoved`, `fileRetry`, `fileProgress`, `fileSuccess`, `fileError` of flow.js. Event `fileSubmitted` is fired when user drops or selects a file.
 
 ```typescript
-export class AppComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('flow', { static: false })
-  flow?: FlowConfig;
+export class AppComponent implements AfterViewInit {
+  private readonly destroyRef = inject(DestroyRef);
 
-  autoUploadSubscription?: Subscription;
+  protected readonly flow = viewChild<FlowConfig>('flow');
 
   ngAfterViewInit() {
-    this.autoUploadSubscription = this.flow?.events$.subscribe(event => {
-      if (event.type === 'filesSubmitted') {
-        this.flow.upload();
-      }
-    });
+    this.flow()?.events$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        switch (event.type) {
+          case 'filesSubmitted':
+            return this.flow()?.upload();
+          case 'newFlowJsInstance':
+            this.cd.detectChanges();
+        }
+      });
   }
 
-  ngOnDestroy() {
-    this.autoUploadSubscription.unsubscribe();
-  }
 }
 ```
 
