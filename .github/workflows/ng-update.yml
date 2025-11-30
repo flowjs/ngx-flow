@@ -1,4 +1,4 @@
-name: "Update Angular Action"
+name: "Update Angular"
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Angular Build & Test (PR)
+name: Build & Test
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
