@@ -12,5 +12,5 @@ jobs:
       - name: Updating ng dependencies
         uses: fast-facts/ng-update@v1
         with:
-          base-branch: master
+          base-branch: ${{ github.event.inputs.branch }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
