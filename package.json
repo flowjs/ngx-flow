@@ -51,6 +51,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
     "karma-spec-reporter": "^0.0.36",
+    "multer": "^2.0.2",
     "ng-packagr": "^21.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "8.46.4"

@@ -1,14 +1,20 @@
 /**
+ * flow.js 2.14.1
+ *
  * @license MIT
  */
 (function(window, document, undefined) {'use strict';
+  if (!window || !document) {
+    console.warn('Flowjs needs window and document objects to work');
+    return;
+  }
   // ie10+
   var ie10plus = window.navigator.msPointerEnabled;
   /**
    * Flow.js is a library providing multiple simultaneous, stable and
    * resumable uploads via the HTML5 File API.
    * @param [opts]
-   * @param {number} [opts.chunkSize]
+   * @param {number|Function} [opts.chunkSize]
    * @param {bool} [opts.forceChunkSize]
    * @param {number} [opts.simultaneousUploads]
    * @param {bool} [opts.singleFile]
@@ -85,6 +91,7 @@
       headers: {},
       withCredentials: false,
       preprocess: null,
+      changeRawDataBeforeSend: null,
       method: 'multipart',
       testMethod: 'GET',
       uploadMethod: 'POST',
@@ -267,6 +274,7 @@
         decrement();
       }
       function readError(fileError) {
+        decrement();
         throw fileError;
       }
       function decrement() {
@@ -747,6 +755,12 @@
     this.uniqueIdentifier = (uniqueIdentifier === undefined ? flowObj.generateUniqueIdentifier(file) : uniqueIdentifier);
 
     /**
+     * Size of Each Chunk
+     * @type {number}
+     */
+    this.chunkSize = 0;
+
+    /**
      * List of chunks
      * @type {Array.<FlowChunk>}
      */
@@ -933,8 +947,9 @@
       // Rebuild stack of chunks from file
       this._prevProgress = 0;
       var round = this.flowObj.opts.forceChunkSize ? Math.ceil : Math.floor;
+      this.chunkSize = evalOpts(this.flowObj.opts.chunkSize, this);
       var chunks = Math.max(
-        round(this.size / this.flowObj.opts.chunkSize), 1
+        round(this.size / this.chunkSize), 1
       );
       for (var offset = 0; offset < chunks; offset++) {
         this.chunks.push(
@@ -1148,13 +1163,19 @@
      * Size of a chunk
      * @type {number}
      */
-    this.chunkSize = this.flowObj.opts.chunkSize;
+    this.chunkSize = this.fileObj.chunkSize;
 
     /**
      * Chunk start byte in a file
      * @type {number}
      */
     this.startByte = this.offset * this.chunkSize;
+
+    /**
+     * A specific filename for this chunk which otherwise default to the main name
+     * @type {string}
+     */
+    this.filename = null;
 
     /**
       * Compute the endbyte in a file
@@ -1237,7 +1258,7 @@
         delete this.data;
         $.event(status, $.message());
         $.flowObj.uploadNextChunk();
-      } else {
+      } else if (!$.fileObj.paused) {
         $.event('retry', $.message());
         $.pendingRetry = true;
         $.abort();
@@ -1262,7 +1283,7 @@
     getParams: function () {
       return {
         flowChunkNumber: this.offset + 1,
-        flowChunkSize: this.flowObj.opts.chunkSize,
+        flowChunkSize: this.chunkSize,
         flowCurrentChunkSize: this.endByte - this.startByte,
         flowTotalSize: this.fileObj.size,
         flowIdentifier: this.fileObj.uniqueIdentifier,
@@ -1279,6 +1300,10 @@
      * @returns {string}
      */
     getTarget: function(target, params){
+      if (params.length == 0) {
+	return target;
+      }
+
       if(target.indexOf('?') < 0) {
         target += '?';
       } else {
@@ -1368,6 +1393,10 @@
 
       var uploadMethod = evalOpts(this.flowObj.opts.uploadMethod, this.fileObj, this);
       var data = this.prepareXhrRequest(uploadMethod, false, this.flowObj.opts.method, this.bytes);
+      var changeRawDataBeforeSend = this.flowObj.opts.changeRawDataBeforeSend;
+      if (typeof changeRawDataBeforeSend === 'function') {
+        data = changeRawDataBeforeSend(this, data);
+      }
       this.xhr.send(data);
     },
 
@@ -1473,7 +1502,7 @@
     prepareXhrRequest: function(method, isTest, paramsMethod, blob) {
       // Add data from the query options
       var query = evalOpts(this.flowObj.opts.query, this.fileObj, this, isTest);
-      query = extend(query, this.getParams());
+      query = extend(query || {}, this.getParams());
 
       var target = evalOpts(this.flowObj.opts.target, this.fileObj, this, isTest);
       var data = null;
@@ -1491,7 +1520,9 @@
         each(query, function (v, k) {
           data.append(k, v);
         });
-        if (typeof blob !== "undefined") data.append(this.flowObj.opts.fileParameterName, blob, this.fileObj.file.name);
+        if (typeof blob !== "undefined") {
+            data.append(this.flowObj.opts.fileParameterName, blob, this.filename || this.fileObj.file.name);
+        }
       }
 
       this.xhr.open(method, target, true);
@@ -1609,7 +1640,7 @@
    * Library version
    * @type {string}
    */
-  Flow.version = '<%= version %>';
+  Flow.version = '2.14.1';
 
   if ( typeof module === "object" && module && typeof module.exports === "object" ) {
     // Expose Flow as module.exports in loaders that implement the Node
@@ -1632,4 +1663,4 @@
       define( "flow", [], function () { return Flow; } );
     }
   }
-})(window, document);
+})(typeof window !== 'undefined' && window, typeof document !== 'undefined' && document);

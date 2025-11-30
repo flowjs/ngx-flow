@@ -1,19 +1,28 @@
-# Sample code for Node.js
+# Chunked Upload Server (Flow.js) — server/app.js
 
-This sample is written for [Node.js](http://nodejs.org/) and requires [Express](http://expressjs.com/) to make the sample code cleaner.
+This document describes the minimal Express server implemented in `server/app.js`.
 
-To install and run:
+## Purpose
 
-    cd samples/Node.js
-    npm install
-    node app.js
+A small Node/Express server to receive chunked file uploads (for example from Flow.js), assemble the final file, and provide a download endpoint.
 
-Then browse to [localhost:3000](http://localhost:3000).
+## Endpoints
+- `OPTIONS /upload` — Returns 200 for CORS preflight requests.
+- `GET /upload` — Check whether a specific chunk already exists. Expects query parameters `flowChunkNumber` and `flowIdentifier`. Returns 200 if the chunk exists, 204 otherwise.
+- `POST /upload` — Accepts a chunk (multipart/form-data, file field named `file`) and the following form fields: `flowChunkNumber`, `flowTotalChunks`, `flowIdentifier`, `flowFilename`. Saves the chunk; if all chunks are present, concatenates them into the final file inside the temporary folder.
+- `GET /download/:filename` — Downloads the reassembled file if it exists.
 
-File chunks will be uploaded to samples/Node.js/tmp directory.
+## How it works
 
-## Enabling Cross-domain Uploads
+- Temporary directory: `server/tmp` (created automatically if missing).
+- Uploaded chunks are stored as `flow-<flowIdentifier>.<chunkNumber>` in the temp dir.
+- When the server detects that all expected chunks are present (based on `flowTotalChunks`), it concatenates them in numeric order into a single file named `flowFilename` in the temp directory and removes the chunk files.
+- Basic CORS headers (`Access-Control-Allow-Origin: *`) are set to simplify local testing from a browser client.
 
-If you would like to load the flow.js library from one domain and have your Node.js reside on another, you must allow 'Access-Control-Allow-Origin' from '*'.  Please remember, there are some potential security risks with enabling this functionality.  If you would still like to implement cross-domain uploads, open app.js and uncomment lines 24-31 and uncomment line 17.
+## Running the server
 
-Then in public/index.html, on line 49, update the target with your server's address.  For example: target:'http://www.example.com/upload'
+```sh
+npm run server
+```
+
+The server listens by default on port `3000`. To change the port, edit the `PORT` constant in `app.js` or modify the code to read an environment variable.
