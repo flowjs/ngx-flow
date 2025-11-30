@@ -2,23 +2,23 @@ import { Component, PLATFORM_ID, ViewChild } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { first, skip } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
-import { FlowChangeEvent, Flow, NgxFlowEvent } from './flow.directive';
+import { FlowChangeEvent, FlowConfig, NgxFlowEvent } from './flow.directive';
 import { flowFileMockFactory } from './helpers/tests/flow-file-mock-factory';
 import { FlowMock } from './helpers/tests/flow-mock';
 import { trasnferMockFactory } from './helpers/tests/transfer-mock-factory';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`,
-  imports: [Flow]
+  imports: [FlowConfig]
 })
 class TestComponent {
   @ViewChild('flow', { static: true })
-  flow!: Flow;
+  flow!: FlowConfig;
 
   config = { target: 'http://localhost:3000/upload' };
 }
 
-describe('Flow', () => {
+describe('FlowConfig', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
@@ -38,7 +38,7 @@ describe('Flow', () => {
 
   it('should initialize flowjs and export flow directive as template reference variable', () => {
     fixture.detectChanges();
-    expect(component.flow instanceof Flow).toBeTruthy();
+    expect(component.flow instanceof FlowConfig).toBeTruthy();
     expect(component.flow.flowJs).toBeDefined();
     expect(component.flow.flowJs.opts.target).toBe('http://localhost:3000/upload');
   });
@@ -197,7 +197,7 @@ describe('Flow (SSR)', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TestComponent, Flow],
+      imports: [TestComponent, FlowConfig],
       providers: [
         {
           provide: FlowInjectionToken,
