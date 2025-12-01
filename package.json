@@ -45,7 +45,7 @@
     "angular-eslint": "^20.0.0",
     "connect-multiparty": "^2.2.0",
     "eslint": "^9.28.0",
-    "express": "^5.1.0",
+    "express": "^5.2.0",
     "karma-chrome-launcher": "^3.2.0",
     "karma-coverage": "^2.2.1",
     "karma-jasmine": "^5.1.0",
