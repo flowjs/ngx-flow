@@ -13,12 +13,9 @@
   "peerDependencies": {
     "@angular/common": "^21.0.0",
     "@angular/core": "^21.0.0",
-    "@flowjs/flow.js": "^2.14.0"
+    "@flowjs/flow.js": "^3.0.0-alpha.1"
   },
   "dependencies": {
     "tslib": "^2.3.0"
-  },
-  "devDependencies": {
-    "@types/flowjs": "^2.14.1"
   }
 }

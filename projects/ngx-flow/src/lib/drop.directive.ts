@@ -1,4 +1,5 @@
 import { Directive, ElementRef, Input, OnInit, Renderer2, inject } from '@angular/core';
+import type { FlowInstance } from './flow-js';
 
 @Directive({
     selector: '[flowDrop]',
@@ -9,10 +10,10 @@ export class FlowDrop implements OnInit {
   protected el = inject(ElementRef);
   protected renderer = inject(Renderer2);
 
-  protected flowJs?: flowjs.Flow;
+  protected flowJs?: FlowInstance;
 
   @Input()
-  set flow(flow: flowjs.Flow) {
+  set flow(flow: FlowInstance) {
     this.flowJs = flow;
     if (!flow) {
       return;

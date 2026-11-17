@@ -1,52 +1,70 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Directive, inject, Input, PLATFORM_ID } from '@angular/core';
+import { Directive, inject, Input, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { fromEvent, merge, Observable, ReplaySubject, Subject } from 'rxjs';
-import { JQueryStyleEventEmitter } from 'rxjs/internal/observable/fromEvent';
 import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
 import { FlowInjectionToken } from './flow-injection-token';
+import type {
+  FlowChangeEvent,
+  FlowEvent,
+  FlowEventDetailMap,
+  FlowEventName,
+  FlowFile,
+  FlowInstance,
+  FlowOptions,
+  UploadSummary,
+} from './flow-js';
 import { flowFile2Transfer } from './helpers/flow-file-to-transfer';
 import { Transfer } from './transfer';
 import { UploadState } from './upload-state';
-
-export interface FlowChangeEvent<T extends flowjs.EventName> {
-  type: T;
-  event: flowjs.FlowEventFromEventName<T>;
-}
 
 export interface NgxFlowEvent {
   type: 'pauseOrResume' | 'newFlowJsInstance';
 }
 
+const FLOW_EVENTS = [
+  'upload-start',
+  'upload-resume',
+  'file-progress',
+  'progress',
+  'file-success',
+  'file-error',
+  'error',
+  'file-retry',
+  'file-removed',
+  'complete',
+] as const satisfies readonly FlowEventName[];
+
 @Directive({
   selector: '[flowConfig]',
-  exportAs: 'flow'
+  exportAs: 'flow',
 })
-export class FlowConfig {
-
+export class FlowConfig implements OnDestroy {
   protected flowConstructor = inject(FlowInjectionToken);
   protected platform = inject(PLATFORM_ID);
 
   @Input()
-  set flowConfig(options: flowjs.FlowOptions) {
+  set flowConfig(options: FlowOptions) {
     if (isPlatformBrowser(this.platform)) {
       this.flowJs = new this.flowConstructor(options);
       this.flow$.next(this.flowJs);
     }
   }
 
-  flowJs!: flowjs.Flow;
+  flowJs!: FlowInstance;
 
-  protected flow$ = new ReplaySubject<flowjs.Flow>(1);
+  protected flow$ = new ReplaySubject<FlowInstance>(1);
 
   pauseOrResumeEvent$ = new Subject<void>();
 
-  events$ = this.flow$.pipe(
+  events$: Observable<
+    FlowChangeEvent<FlowEventName> | NgxFlowEvent
+  > = this.flow$.pipe(
     switchMap((flow) => merge(this.flowEvents(flow), this.ngxFlowEvents()))
   );
 
   transfers$: Observable<UploadState> = this.events$.pipe(
     map(() => this.flowJs.files),
-    map((files: flowjs.FlowFile[] = []) => ({
+    map((files: FlowFile[] = []) => ({
       transfers: files.map((flowFile) => flowFile2Transfer(flowFile)),
       flow: this.flowJs,
       totalProgress: this.flowJs.progress(),
@@ -55,80 +73,79 @@ export class FlowConfig {
   );
 
   somethingToUpload$ = this.transfers$.pipe(
-    map(
-      (state) => state.transfers.some((file) => !file.success),
-      startWith(false)
-    )
+    map((state) => state.transfers.some((file) => !file.success)),
+    startWith(false)
   );
 
-  private flowEvents(
-    flow: flowjs.Flow
-  ): Observable<FlowChangeEvent<flowjs.EventName>> {
-    const events = [
-      this.listenForEvent(flow, 'fileSuccess'),
-      this.listenForEvent(flow, 'fileProgress'),
-      this.listenForEvent(flow, 'fileAdded'),
-      this.listenForEvent(flow, 'filesAdded'),
-      this.listenForEvent(flow, 'filesSubmitted'),
-      this.listenForEvent(flow, 'fileRemoved'),
-      this.listenForEvent(flow, 'fileRetry'),
-      this.listenForEvent(flow, 'fileError'),
-      this.listenForEvent(flow, 'uploadStart'),
-      this.listenForEvent(flow, 'complete'),
-      this.listenForEvent(flow, 'progress'),
-    ];
-    return merge(...events);
+  ngOnDestroy(): void {
+    this.flow$.complete();
+    this.pauseOrResumeEvent$.complete();
   }
 
-  private ngxFlowEvents(): Observable<NgxFlowEvent> {
-    const pauseOrResumeEvent$ = this.pauseOrResumeEvent$.pipe(
-      map(() => ({
-        type: 'pauseOrResume',
-      } as NgxFlowEvent))
-    );
-    const newFlowInstanceEvent$ = this.flow$.pipe(
-      map(() => ({
-        type: 'newFlowJsInstance',
-      } as NgxFlowEvent)
-      ));
-    const events = [pauseOrResumeEvent$, newFlowInstanceEvent$];
-    return merge(...events);
+  upload(): Promise<UploadSummary> {
+    return this.flowJs.upload();
   }
 
-  upload(): void {
-    this.flowJs.upload();
+  cancel(): Promise<void> {
+    return this.flowJs.cancel();
   }
 
-  cancel(): void {
-    this.flowJs.cancel();
+  cancelFile(file: Transfer): Promise<void> {
+    return file.flowFile.cancel();
   }
 
-  cancelFile(file: Transfer): void {
-    file.flowFile.cancel();
-  }
-
-  pauseFile(file: Transfer): void {
-    file.flowFile.pause();
+  async pauseFile(file: Transfer): Promise<void> {
+    await file.flowFile.pause();
     this.pauseOrResumeEvent$.next();
   }
 
   resumeFile(file: Transfer): void {
-    file.flowFile.resume();
+    void file.flowFile.resume().catch(() => undefined);
     this.pauseOrResumeEvent$.next();
   }
 
-  protected listenForEvent<T extends flowjs.EventName, R extends flowjs.FlowEventFromEventName<T>>(
-    flow: flowjs.Flow,
-    eventName: T
-  ): Observable<{ type: T; event: R; }> {
-    return fromEvent<R>(
-      flow as JQueryStyleEventEmitter<any, R>,
-      eventName
-    ).pipe(
-      map((args) => ({
-        type: eventName,
-        event: args,
-      }))
+  protected flowEvents(
+    flow: FlowInstance
+  ): Observable<FlowChangeEvent<FlowEventName>> {
+    const events = FLOW_EVENTS.map((eventName) =>
+      this.listenForEvent(flow, eventName)
+    );
+    return merge(...events);
+  }
+
+  protected ngxFlowEvents(): Observable<NgxFlowEvent> {
+    const pauseOrResumeEvent$ = this.pauseOrResumeEvent$.pipe(
+      map(
+        () =>
+          ({
+            type: 'pauseOrResume',
+          }) as NgxFlowEvent
+      )
+    );
+    const newFlowInstanceEvent$ = this.flow$.pipe(
+      map(
+        () =>
+          ({
+            type: 'newFlowJsInstance',
+          }) as NgxFlowEvent
+      )
+    );
+    return merge(pauseOrResumeEvent$, newFlowInstanceEvent$);
+  }
+
+  protected listenForEvent<TType extends FlowEventName>(
+    flow: FlowInstance,
+    eventName: TType
+  ): Observable<FlowChangeEvent<TType>> {
+    return fromEvent(flow, eventName).pipe(
+      map((event) => {
+        const flowEvent = event as FlowEvent<TType>;
+        return {
+          type: eventName,
+          event: flowEvent,
+          detail: flowEvent.detail as FlowEventDetailMap[TType],
+        };
+      })
     );
   }
 }

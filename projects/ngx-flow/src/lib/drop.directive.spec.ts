@@ -1,6 +1,7 @@
 import { Component, DebugElement, Renderer2, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import type { FlowInstance } from './flow-js';
 import { FlowDrop } from './drop.directive';
 
 @Component({
@@ -8,7 +9,7 @@ import { FlowDrop } from './drop.directive';
   imports: [FlowDrop]
 })
 class TestComponent {
-  flowJs?: Partial<flowjs.Flow>;
+  flowJs?: FlowInstance;
 
   @ViewChild('flowDrop', { static: false })
   flowDrop!: FlowDrop;
@@ -34,7 +35,7 @@ describe('FlowDrop', () => {
     component.flowJs = {
       assignDrop: jasmine.createSpy(),
       unAssignDrop: jasmine.createSpy(),
-    };
+    } as unknown as FlowInstance;
 
     expect(component.flowJs.assignDrop).toHaveBeenCalledTimes(0);
     fixture.detectChanges();
@@ -47,7 +48,7 @@ describe('FlowDrop', () => {
     component.flowJs = {
       assignDrop: jasmine.createSpy(),
       unAssignDrop: jasmine.createSpy(),
-    };
+    } as unknown as FlowInstance;
     fixture.detectChanges();
 
     component.flowDrop.disable();

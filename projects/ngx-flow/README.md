@@ -2,6 +2,8 @@
 
 The purpose of this package is to create a wrapper for Angular for fileupload using [flow.js](https://github.com/flowjs/flow.js).
 
+This version targets the flow.js v3 API: native `EventTarget` events, explicit `hooks`, completion-oriented `upload()`, and pass-through support for streaming and integrity options.
+
 [![Build Status](https://travis-ci.com/flowjs/ngx-flow.svg?branch=master)](https://travis-ci.com/flowjs/ngx-flow)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/test_coverage)](https://codeclimate.com/github/flowjs/ngx-flow/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/29153dcefffff1fe5a5c/maintainability)](https://codeclimate.com/github/flowjs/ngx-flow/maintainability)
@@ -34,7 +36,11 @@ You can also find example source code in the `src` folder.
 
 ## Install
 
-`npm install @flowjs/flow.js @flowjs/ngx-flow`
+`npm install @flowjs/flow.js@^3.0.0-alpha.1 @flowjs/ngx-flow`
+
+> flow.js v3 is not published yet. Until it is, link or install a local v3 build
+> when running the demo. The ngx-flow library itself has no runtime dependency on
+> flow.js; the constructor is provided through `FlowInjectionToken`.
 
 Import in your module:
 
@@ -54,7 +60,7 @@ import Flow from '@flowjs/flow.js';
 export class AppModule
 ```
 
-We use dependecy injection to provide flow.js library.
+We use dependecy injection to provide flow.js library. Provide the flow.js v3 default export for `FlowInjectionToken`.
 
 ## How to use
 
@@ -164,7 +170,7 @@ Observable `flow.transfers$` emits state in form:
 You can find it under `flow` variable.
 
 ```html
-<p>Is flowjs supported by the browser? {{flow.flowJs?.support}}</p>
+<p>Directory upload support: {{flow.flowJs?.supportDirectory}}</p>
 ```
 
 ### I see flickering when upload is in progress
@@ -211,28 +217,63 @@ Use directive `flowSrc`:
 
 ### How to trigger upload right after picking the file?
 
-Subscribe to `events$`. NgxFlow listens for these events: `filesSubmitted`, `fileRemoved`, `fileRetry`, `fileProgress`, `fileSuccess`, `fileError` of flow.js. Event `fileSubmitted` is fired when user drops or selects a file.
+flow.js v3 runs hooks after files are queued. Use `hooks.filesSubmitted` in the `flowConfig` options to start the upload session automatically:
 
 ```typescript
-export class AppComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('flow')
-  flow: FlowDirective;
-
-  autoUploadSubscription: Subscription;
-
-  ngAfterViewInit() {
-    this.autoUploadSubscription = this.flow.events$.subscribe((event) => {
-      if (event.type === 'filesSubmitted') {
-        this.flow.upload();
-      }
-    });
+readonly config: FlowOptions = {
+  target: 'http://localhost:3000/upload',
+  hooks: {
+    filesSubmitted: () => {
+      void this.flow?.upload();
+    }
   }
-
-  ngOnDestroy() {
-    this.autoUploadSubscription.unsubscribe();
-  }
-}
+};
 ```
+
+```html
+<ng-container #flow="flow" [flowConfig]="config"></ng-container>
+```
+
+Prefer the `filesSubmitted` hook over an `events$` subscription: flow.js v3 no longer dispatches an event for it.
+
+`events$` exposes the native flow.js v3 events with their object details. NgxFlow listens for `upload-start`, `upload-resume`, `file-progress`, `progress`, `file-success`, `file-error`, `error`, `file-retry`, `file-removed` and `complete`:
+
+```typescript
+this.flow.events$.subscribe((event) => {
+  if (event.type === 'file-success') {
+    console.log(event.detail.file.name);
+  }
+});
+```
+
+`upload()` is completion-oriented in v3: it resolves when the session is complete or cancelled. You can call it without awaiting for fire-and-forget use.
+
+### Streaming, integrity and hooks
+
+`flowConfig` is passed directly to the flow.js v3 constructor, so the v3 options are available without an ngx-flow-specific wrapper:
+
+```typescript
+const config: FlowOptions = {
+  target: '/upload',
+  streaming: true,
+  allowShortStream: false,
+  chunkChecksum: async (chunk, payload) => {
+    // return an async digest; flow.js sends it as flowChunkHash
+    return computeChecksum(payload);
+  },
+  xhrTimeout: 30_000,
+  hooks: {
+    filterFile: (file) => file.size > 0,
+    filesSubmitted: (files) => {
+      // start the session when ready
+    }
+  }
+};
+```
+
+With `streaming: true`, flow.js sends `flowTotalSize=-1`, `flowIsStreaming=true`, a growing `flowTotalChunks` and a final zero-byte `flowChunkIsLast` marker. The server must support that protocol. `chunkChecksum` is cached across retries and is not recomputed for a cached payload. Whole-file checksums should be computed in `initFileFn` (which may be async) and sent through `query` or `headers`.
+
+The `Transfer` interface also exposes v3 state such as `errorMessage`, `cancelled` and `streaming`. A failed file is `complete` but not `success`; success is derived from `FlowFile.isSuccessful()`.
 
 ### Development
 

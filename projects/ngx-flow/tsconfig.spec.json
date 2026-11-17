@@ -6,8 +6,7 @@
     "baseUrl": "./",
     "outDir": "../../out-tsc/spec",
     "types": [
-      "jasmine",
-      "flowjs"
+      "jasmine"
     ]
   },
   "include": [

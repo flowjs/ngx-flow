@@ -40,7 +40,6 @@
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
     "@types/express": "^5.0.3",
-    "@types/flowjs": "^2.13.14",
     "@types/jasmine": "~6.0.0",
     "angular-eslint": "^21.0.0",
     "connect-multiparty": "^2.2.0",

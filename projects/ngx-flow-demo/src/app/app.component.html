@@ -4,7 +4,7 @@
 </p>
 
 <p>
-  @if (flow?.flowJs?.support) {
+  @if (flow?.flowJs?.supportDirectory) {
     ✅ FlowJS is supported by your browser
   }
   @else {
@@ -12,7 +12,7 @@
   }
 </p>
 
-<ng-container #flow="flow" [flowConfig]="{target: 'http://localhost:3000/upload'}"></ng-container>
+<ng-container #flow="flow" [flowConfig]="config"></ng-container>
 
 <input type="file"
        flowButton
@@ -43,6 +43,8 @@ Total progress: {{(flow.transfers$ | async)?.totalProgress | percent}}
       <div>success: {{transfer.success}}</div>
       <div>complete: {{transfer.complete}}</div>
       <div>error: {{transfer.error}}</div>
+      <div>error message: {{transfer.errorMessage}}</div>
+      <div>cancelled: {{transfer.cancelled}}</div>
 
       <img [flowSrc]="transfer" alt="transfer rendering">
 

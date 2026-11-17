@@ -1,4 +1,9 @@
-export function flowFileMockFactory(filename: string, overrides?: Partial<flowjs.FlowFile>): flowjs.FlowFile {
+import type { FlowFile } from '../../flow-js';
+
+export function flowFileMockFactory(
+  filename: string,
+  overrides?: Partial<FlowFile>
+): FlowFile {
   const mocks = {
     flowObj: null as any,
     file: {
@@ -13,19 +18,24 @@ export function flowFileMockFactory(filename: string, overrides?: Partial<flowjs
     currentSpeed: 0,
     chunks: [],
     paused: false,
+    cancelled: false,
     error: false,
+    errorMessage: null,
+    streaming: false,
+    eof: false,
     progress: jasmine.createSpy(),
     pause: jasmine.createSpy(),
     resume: jasmine.createSpy(),
     cancel: jasmine.createSpy(),
     retry: jasmine.createSpy(),
-    bootstrap: jasmine.createSpy(),
-    isUploading: jasmine.createSpy(),
-    isComplete: jasmine.createSpy(),
     sizeUploaded: jasmine.createSpy(),
     timeRemaining: jasmine.createSpy(),
+    isUploading: jasmine.createSpy(),
+    isReading: jasmine.createSpy(),
+    isComplete: jasmine.createSpy(),
+    isSuccessful: jasmine.createSpy(),
     getExtension: jasmine.createSpy(),
     getType: jasmine.createSpy(),
-  } as flowjs.FlowFile;
+  } as unknown as FlowFile;
   return Object.assign({}, mocks, overrides);
 }

@@ -1,21 +1,31 @@
 import { Component, PLATFORM_ID, ViewChild } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { first, skip } from 'rxjs/operators';
+import type {
+  FlowChangeEvent,
+  FlowEventName,
+  FlowOptions,
+} from './flow-js';
 import { FlowInjectionToken } from './flow-injection-token';
-import { FlowChangeEvent, FlowConfig, NgxFlowEvent } from './flow.directive';
+import { FlowConfig, NgxFlowEvent } from './flow.directive';
 import { flowFileMockFactory } from './helpers/tests/flow-file-mock-factory';
 import { FlowMock } from './helpers/tests/flow-mock';
 import { trasnferMockFactory } from './helpers/tests/transfer-mock-factory';
 
 @Component({
   template: `<ng-container #flow="flow" [flowConfig]="config"></ng-container>`,
-  imports: [FlowConfig]
+  imports: [FlowConfig],
 })
 class TestComponent {
   @ViewChild('flow', { static: true })
   flow!: FlowConfig;
 
-  config = { target: 'http://localhost:3000/upload' };
+  config: FlowOptions = { target: 'http://localhost:3000/upload' };
 }
 
 describe('Flow', () => {
@@ -40,25 +50,75 @@ describe('Flow', () => {
     fixture.detectChanges();
     expect(component.flow instanceof FlowConfig).toBeTruthy();
     expect(component.flow.flowJs).toBeDefined();
-    expect(component.flow.flowJs.opts.target).toBe('http://localhost:3000/upload');
+    expect(component.flow.flowJs.opts.target).toBe(
+      'http://localhost:3000/upload'
+    );
+  });
+
+  it('should pass v3 options and hooks to the flow constructor', () => {
+    const hooks = {
+      filesSubmitted: jasmine.createSpy('filesSubmitted'),
+    };
+
+    component.config = {
+      target: 'http://localhost:3000/upload',
+      hooks,
+    };
+    fixture.detectChanges();
+
+    expect(component.flow.flowJs.opts.hooks).toBe(hooks);
   });
 
   it('should emit new flowjs instance when new config is provided', fakeAsync(() => {
     component.flow.transfers$
       .pipe(first())
-      .subscribe((transfers) => expect(transfers.flow.opts.target).toBe('http://localhost:3000/upload'));
+      .subscribe((transfers) =>
+        expect(transfers.flow.opts.target).toBe(
+          'http://localhost:3000/upload'
+        )
+      );
     fixture.detectChanges();
     tick();
     component.config = { target: 'http://localhost:4000/upload' };
     fixture.detectChanges();
     component.flow.transfers$
       .pipe(first())
-      .subscribe((transfers) => expect(transfers.flow.opts.target).toBe('http://localhost:4000/upload'));
+      .subscribe((transfers) =>
+        expect(transfers.flow.opts.target).toBe(
+          'http://localhost:4000/upload'
+        )
+      );
   }));
+
+  it('should listen to v3 kebab-case events', () => {
+    fixture.detectChanges();
+    const subscription = component.flow.events$.subscribe();
+    const flowMock = component.flow.flowJs as unknown as FlowMock;
+
+    expect(Object.keys(flowMock.flowJsEventEmitters)).toEqual(
+      jasmine.arrayContaining([
+        'upload-start',
+        'upload-resume',
+        'file-progress',
+        'progress',
+        'file-success',
+        'file-error',
+        'error',
+        'file-retry',
+        'file-removed',
+        'complete',
+      ])
+    );
+    expect(Object.keys(flowMock.flowJsEventEmitters)).not.toContain(
+      'fileSuccess'
+    );
+    subscription.unsubscribe();
+  });
 
   it('should emit transfer when file is added', (done: DoneFn) => {
     fixture.detectChanges();
-    component.flow.flowJs.files = [flowFileMockFactory('file.txt')];
+    const flowMock = component.flow.flowJs as unknown as FlowMock;
+    flowMock.files = [flowFileMockFactory('file.txt')];
     component.flow.transfers$
       .pipe(
         skip(1), // skip initial emit with empty array
@@ -69,8 +129,12 @@ describe('Flow', () => {
         expect(transfers.transfers[0].name).toBe('file.txt');
         done();
       });
-    const flowMock = component.flow.flowJs as unknown as FlowMock;
-    flowMock.flowJsEventEmitters['filesSubmitted']();
+
+    flowMock.emit('file-progress', {
+      file: flowMock.files[0],
+      chunk: flowMock.files[0].chunks[0],
+      progress: 0,
+    });
   });
 
   it('should emit transfers on pause/resume', (done: DoneFn) => {
@@ -111,14 +175,17 @@ describe('Flow', () => {
     expect(fileMock.flowFile.cancel).toHaveBeenCalled();
   });
 
-  it('should pause file and emit event', (done) => {
+  it('should pause file and emit event', async () => {
     fixture.detectChanges();
     const fileMock = trasnferMockFactory('file.txt');
-    component.flow.pauseOrResumeEvent$.pipe(first()).subscribe(() => {
-      done();
+    const eventEmitted = new Promise<void>((resolve) => {
+      component.flow.pauseOrResumeEvent$.pipe(first()).subscribe(() => {
+        resolve();
+      });
     });
 
-    component.flow.pauseFile(fileMock);
+    await component.flow.pauseFile(fileMock);
+    await eventEmitted;
     expect(fileMock.flowFile.pause).toHaveBeenCalled();
   });
 
@@ -135,9 +202,10 @@ describe('Flow', () => {
 
   it('should tell us if there is something to upload', (done) => {
     fixture.detectChanges();
-    component.flow.flowJs.files = [
+    const flowMock = component.flow.flowJs as unknown as FlowMock;
+    flowMock.files = [
       flowFileMockFactory('file.txt', {
-        isComplete() {
+        isSuccessful() {
           return false;
         },
       }),
@@ -152,14 +220,18 @@ describe('Flow', () => {
         done();
       });
 
-    (component.flow.flowJs as any).flowJsEventEmitters['filesSubmitted']();
+    flowMock.emit('file-progress', {
+      file: flowMock.files[0],
+      chunk: flowMock.files[0].chunks[0],
+      progress: 0,
+    });
   });
 
   it('should tell us if there is nothing to upload after everything was uploaded', (done) => {
     fixture.detectChanges();
     component.flow.flowJs.files = [
       flowFileMockFactory('file.txt', {
-        isComplete() {
+        isSuccessful() {
           return true;
         },
       }),
@@ -170,24 +242,30 @@ describe('Flow', () => {
     });
   });
 
-  it('should emit event when file is succesfully uploaded', (done) => {
+  it('should emit event detail object when file is successfully uploaded', (done) => {
     fixture.detectChanges();
     function isFileSuccessEvent(
-      event: FlowChangeEvent<flowjs.EventName> | NgxFlowEvent
-    ): event is FlowChangeEvent<'fileSuccess'> {
-      return event.type === 'fileSuccess';
+      event: FlowChangeEvent<FlowEventName> | NgxFlowEvent
+    ): event is FlowChangeEvent<'file-success'> {
+      return event.type === 'file-success';
     }
 
     component.flow.events$.subscribe((event) => {
       if (!isFileSuccessEvent(event)) {
         return;
       }
-      expect(event.event[0].name).toBe('file.txt');
-      expect(event.type).toBe('fileSuccess');
+      expect(event.type).toBe('file-success');
+      expect(event.detail.file.name).toBe('file.txt');
+      expect(event.event.detail.file.name).toBe('file.txt');
       done();
     });
-    const fileSuccessEvent: flowjs.FileSuccessCallbackArguments = [flowFileMockFactory('file.txt'), '', null as any];
-    (component.flow.flowJs as any).flowJsEventEmitters['fileSuccess'](fileSuccessEvent);
+
+    const file = flowFileMockFactory('file.txt');
+    (component.flow.flowJs as unknown as FlowMock).emit('file-success', {
+      file,
+      message: '',
+      chunk: file.chunks[0],
+    });
   });
 });
 

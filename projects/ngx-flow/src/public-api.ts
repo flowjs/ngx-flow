@@ -10,3 +10,4 @@ export * from './lib/transfer';
 export * from './lib/flow-injection-token';
 export * from './lib/ngx-flow.module';
 export * from './lib/flow-constructor';
+export * from './lib/flow-js';
